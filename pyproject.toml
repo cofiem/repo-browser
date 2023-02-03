@@ -7,7 +7,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-Django = "4.0a1"
+Django = "4.0.9"
 colorama = "^0.4.4"
 requests = "^2.26.0"
 
