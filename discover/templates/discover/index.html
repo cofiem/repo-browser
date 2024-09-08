@@ -1,3 +1,8 @@
+{% extends "discover/base.html" %}
+
+{% block title %}Repo Browser{% endblock %}
+
+{% block body %}
 
 {% if messages %}
     <ul class="messages">
@@ -7,9 +12,30 @@
     </ul>
 {% endif %}
 
+<p>
+    Enter a Debian / Ubuntu
+    <a href="https://manpages.debian.org/bookworm/apt/sources.list.5.en.html">apt data source</a>:
+</p>
+<ul>
+    <li>the URI for the base of the Debian distribution</li>
+    <li>the one-line style format</li>
+</ul>
+
 <form action="{% url 'discover:index' %}" method="post">
     {% csrf_token %}
     {{ form }}
     <input type="submit" value="Browse">
 </form>
 
+<p>
+    Here are some examples:
+</p>
+<ul>
+    <li><a href="{% url 'discover:repository' 'ppa.launchpadcontent.net' 'deadsnakes/ppa/ubuntu' %}">deadsnakes PPA</a></li>
+    <li><a href="{% url 'discover:repository' 'download.docker.com' 'linux/ubuntu' %}{% querystring sign_url='https://download.docker.com/linux/ubuntu/gpg' %}">Docker repository</a></li>
+    <li><a href="{% url 'discover:repository' 'nginx.org' 'packages/ubuntu' %}{% querystring sign_url='https://nginx.org/keys/nginx_signing.key' %}">Nginx repository</a></li>
+    <li><a href="{% url 'discover:repository' 'apt.postgresql.org' 'pub/repos/apt' %}{% querystring sign_url='https://www.postgresql.org/media/keys/ACCC4CF8.asc' %}">PostgreSQL repository</a></li>
+    <li><a href="{% url 'discover:repository-netloc' 'apt.releases.hashicorp.com' %}{% querystring sign_url='https://apt.releases.hashicorp.com/gpg' %}">HashiCorp repository</a></li>
+    <li><a href="{% url 'discover:repository' 'dl.google.com' 'linux/chrome/deb' %}{% querystring sign_url=' https://dl.google.com/linux/linux_signing_key.pub' %}">Google Chrome repository</a></li>
+</ul>
+{% endblock %}

@@ -1,6 +1,13 @@
-repository {{ repository }}
-directory {{ directory }}
+{% extends "discover/base.html" %}
 
-<pre style="white-space: pre-wrap;">
-{{ links }}
-</pre>
+{% block title %}Repo Browser | Repository {{ repository }} at {{ directory }}{% endblock %}
+
+{% block body %}
+
+<p>Items in <a href="{{ html_listing.url }}">{{ repository }} at {{ directory }}</a></p>
+<ul>
+    {% for link in html_listing.links %}
+        <li><a href="{% url 'discover:repository' repository directory %}{{ link }}">{{ link }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

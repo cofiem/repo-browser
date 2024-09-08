@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import sys
 from pathlib import Path
 
 from intrigue.http_client import HttpClient
@@ -28,6 +28,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+    "::1",
+    # from
+    "192.168.65.1", # docker: import socket; socket.gethostbyname("host.docker.internal")
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -39,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -124,3 +130,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom settings
 
 BACKEND_HTTP_CLIENT = HttpClient(cache_file=DATABASE_PATH)
+
+
+# Only enable the toolbar when we're in debug mode and we're
+# not running tests. Django will change DEBUG to be False for
+# tests, so we can't rely on DEBUG alone.
+IS_RUNNING_TESTS = "test" in sys.argv
+if DEBUG and not IS_RUNNING_TESTS:
+    INSTALLED_APPS += [
+        "debug_toolbar",
+    ]
+    MIDDLEWARE += [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]

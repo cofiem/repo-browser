@@ -1,3 +1,9 @@
+{% extends "discover/base.html" %}
+
+{% block title %}Repo Browser | Item {{ item }} in repository {{ repository }} at {{ directory }}{% endblock %}
+
+{% block body %}
+
 repository {{ repository }}
 directory {{ directory }}
 item {{ item }}
@@ -5,3 +11,4 @@ item {{ item }}
 <pre style="white-space: pre-wrap;">
 {{ url }}
 </pre>
+{% endblock %}

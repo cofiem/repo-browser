@@ -7,11 +7,21 @@ import pathlib
 import time
 import typing
 from urllib.parse import urlunsplit
-
-import requests_cache
 import logging
 
+import attrs
+import requests_cache
+import parsel
+
 logger = logging.getLogger(__name__)
+
+
+@attrs.frozen
+class HtmlListing:
+    """A html page that lists the contents of a directory."""
+
+    url: str
+    links: list[str]
 
 
 class HttpClient:
@@ -101,15 +111,44 @@ class HttpClient:
         status = resp.status_code
         return status, resp.json() if status < 400 else None
 
-    def build_url(self, netloc: str, middle: str | None = None, item: str | None = None) -> str:
-        if middle and item:
-            path = '/'.join((middle, item))
-        elif middle and not item:
-            path = middle
-        elif not middle and item:
-            path = middle
+    def build_url(self, netloc: str, *args: str) -> str:
+        if args:
+            path = '/'.join(args)
         else:
             path = ''
 
         parts = ('https', netloc, path, '', '')
-        return urlunsplit(parts)
+        result = urlunsplit(parts)
+        if not result.endswith("/"):
+            result += '/'
+        return result
+
+    def from_html(self, url: str, html: str) -> "HtmlListing":
+        selector = parsel.Selector(text=html)
+
+        links = []
+
+        logger.debug("html listing links on %s", url)
+        seen_parent = False
+        options = ["..", "../", "parent directory"]
+        for link in selector.css("a"):
+            name = link.css("::text").get().strip().casefold()
+            link_url = link.attrib["href"]
+            logger.debug("html listing link: %s - %s", name, link_url)
+            if not seen_parent and name not in options and link_url not in options:
+                logger.debug("html listing link ignore: %s - %s", name, link_url)
+                continue
+            elif name in options or link_url in options:
+                seen_parent = True
+                logger.debug("html listing link parent: %s - %s", name, link_url)
+                continue
+            elif link_url.startswith("http") and not link_url.startswith(url):
+                logger.debug("html listing link ignore external: %s - %s", name, link_url)
+                continue
+            else:
+                links.append(link_url.strip().strip("/"))
+
+        if seen_parent is not True:
+            raise ValueError("Unknown html directory listing format.")
+
+        return HtmlListing(url=url, links=sorted(links))
