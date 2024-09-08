@@ -1,4 +1,11 @@
+# web
 Django==5.1.1
+daphne==4.1.2
+
+# remote repos
 requests==2.32.3
 requests-cache==1.2.1
-daphne==4.1.2
+parsel==1.9.1
+
+# models
+attrs==24.2.0

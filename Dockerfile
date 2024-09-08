@@ -54,3 +54,17 @@ COPY . .
 EXPOSE 8001
 
 CMD ["python", "-m", "daphne", "-b", "0.0.0.0", "-p", "8001", "examine.asgi:application"]
+
+FROM python:3.11 AS dev
+
+WORKDIR /usr/src/app
+
+COPY requirements.txt requirements-dev.txt ./
+COPY --from=build /opt/python-apt/dist/python_apt* /tmp/
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt /tmp/python_apt*
+
+COPY . .
+
+EXPOSE 8001
+
+CMD ["python", "-m", "daphne", "-b", "0.0.0.0", "-p", "8001", "examine.asgi:application"]

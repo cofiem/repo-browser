@@ -2,11 +2,9 @@ from django.urls import path
 
 from . import views
 
-app_name='discover'
+app_name = 'discover'
 urlpatterns = [
-    path("", views.index, name="index"),
-    path("repository/<repository>/", views.repository, name="repository"),
-    path("directory/<repository>/<path:directory>/", views.directory, name="directory"),
-    path("item/<repository>/<path:directory>/<item>/", views.item, name="item"),
-    path("instance/<repository>/<path:directory>/<item>/<instance>/", views.instance, name="instance"),
+    path("", views.IndexView.as_view(), name="index"),
+    path("repository/<repository>/<path:directory>/", views.RepositoryView.as_view(), name="repository"),
+    path("item/<repository>/<path:directory>/<item>/", views.ItemView.as_view(), name="item"),
 ]
