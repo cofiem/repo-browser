@@ -4,10 +4,23 @@
 
 {% block body %}
 
-<p>Items in <a href="{{ html_listing.url }}">{{ repository }} at {{ directory }}</a></p>
-<ul>
-    {% for link in html_listing.links %}
-        <li><a href="{% url 'discover:repository' repository directory %}{{ link }}">{{ link }}</a></li>
-    {% endfor %}
-</ul>
+    <h3><a href="/">home</a></h3>
+    
+    <h3>Directory browser
+        <small><a href="{{ html_listing.url }}">{{ repository }} at {{ directory }}</a></small>
+    </h3>
+    <ul>
+        {% for link in html_listing.links %}
+            <li><a href="{% url 'discover:repository' repository directory %}{{ link }}">{{ link }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <h3>Structure browser</h3>
+    <p>TODO: parsed repo contents</p>
+    
+    <h3>File viewer</h3>
+    <p>TODO: view file content</p>
+    
+    <p>TODO: do things async</p>
+    
 {% endblock %}

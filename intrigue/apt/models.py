@@ -1,4 +1,5 @@
 """Models for repository data."""
+
 import datetime
 import enum
 import logging
@@ -33,22 +34,22 @@ class RepositorySourceEntry:
     """The url to the GPG public key used to verify files in this repository."""
 
     def with_architectures(
-            self, values: list[str], action: str = "extend"
+        self, values: list[str], action: str = "extend"
     ) -> "RepositorySourceEntry":
         return self._new_items(values, action, "architectures")
 
     def with_components(
-            self, values: list[str], action: str = "extend"
+        self, values: list[str], action: str = "extend"
     ) -> "RepositorySourceEntry":
         return self._new_items(values, action, "components")
 
     def with_distributions(
-            self, values: list[str], action: str = "extend"
+        self, values: list[str], action: str = "extend"
     ) -> "RepositorySourceEntry":
         return self._new_items(values, action, "distributions")
 
     def with_signed_by(
-            self, value: str | pathlib.Path | None
+        self, value: str | pathlib.Path | None
     ) -> "RepositorySourceEntry":
         if not value:
             value = None
@@ -61,7 +62,7 @@ class RepositorySourceEntry:
         return self._new_item(value, "signed_by")
 
     def _new_items(
-            self, values: typing.Optional[list[str]], action: str, field: str
+        self, values: typing.Optional[list[str]], action: str, field: str
     ) -> "RepositorySourceEntry":
         existing = getattr(self, field)
         if action == "extend":
@@ -87,6 +88,7 @@ class RepositorySourceEntry:
 @attrs.frozen
 class Field:
     """A field in a control file."""
+
     name: str
     values: list[str]
 
@@ -94,6 +96,7 @@ class Field:
 @attrs.frozen
 class Paragraph:
     """A paragraph in a control file."""
+
     fields: list[Field] = attrs.field(factory=list)
 
     def get_field_value(self, name: str) -> typing.Optional[Field]:
@@ -106,6 +109,7 @@ class Paragraph:
 @attrs.frozen
 class Control:
     """A Debian apt control file."""
+
     paragraphs: list[Paragraph] = attrs.field(factory=list)
 
 
@@ -250,6 +254,7 @@ class Release:
 @attrs.frozen
 class RepositoryRelease:
     """Possible Debian repository Release files."""
+
     release: Release
     """The APT repository Release file."""
     signature: gpg_models.SignaturePacket | None = None

@@ -6,7 +6,7 @@ import datetime
 import pathlib
 import time
 import typing
-from urllib.parse import urlunsplit
+
 import logging
 
 import attrs
@@ -38,11 +38,11 @@ class HttpClient:
     user_agent = "repo-browser (+https://github.com/cofiem/repo-browser)"
 
     def __init__(
-            self,
-            cache_file: typing.Optional[pathlib.Path],
-            expire_after: typing.Optional[datetime.timedelta] = None,
-            throttle_time: typing.Optional[datetime.timedelta] = None,
-            use_cache_control: bool = False,
+        self,
+        cache_file: typing.Optional[pathlib.Path],
+        expire_after: typing.Optional[datetime.timedelta] = None,
+        throttle_time: typing.Optional[datetime.timedelta] = None,
+        use_cache_control: bool = False,
     ):
         if not cache_file:
             raise ValueError("Cache path must be provided.")
@@ -111,18 +111,6 @@ class HttpClient:
         status = resp.status_code
         return status, resp.json() if status < 400 else None
 
-    def build_url(self, netloc: str, *args: str) -> str:
-        if args:
-            path = '/'.join(args)
-        else:
-            path = ''
-
-        parts = ('https', netloc, path, '', '')
-        result = urlunsplit(parts)
-        if not result.endswith("/"):
-            result += '/'
-        return result
-
     def from_html(self, url: str, html: str) -> "HtmlListing":
         selector = parsel.Selector(text=html)
 
@@ -143,10 +131,12 @@ class HttpClient:
                 logger.debug("html listing link parent: %s - %s", name, link_url)
                 continue
             elif link_url.startswith("http") and not link_url.startswith(url):
-                logger.debug("html listing link ignore external: %s - %s", name, link_url)
+                logger.debug(
+                    "html listing link ignore external: %s - %s", name, link_url
+                )
                 continue
             else:
-                links.append(link_url.strip().strip("/"))
+                links.append(link_url.strip())
 
         if seen_parent is not True:
             raise ValueError("Unknown html directory listing format.")

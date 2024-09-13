@@ -89,7 +89,9 @@ def get_date(value: str):
     raise ValueError(f"Cannot parse date {value}.")
 
 
-def read(name: str, content: bytes) -> typing.Generator[tuple[str, bytes], typing.Any, None]:
+def read(
+    name: str, content: bytes
+) -> typing.Generator[tuple[str, bytes], typing.Any, None]:
     """Read the content with the given name and generate the raw content it contains."""
     exts_xz = [".xz", ".lzma"]
     exts_gz = [".gz", ".gzip"]
@@ -115,20 +117,23 @@ def read(name: str, content: bytes) -> typing.Generator[tuple[str, bytes], typin
             for element in container.infolist():
                 if element.is_dir():
                     continue
-                with container.open(element, 'r') as file_content:
+                with container.open(element, "r") as file_content:
                     if file_content is not None:
                         yield element.filename, file_content.read()
 
     if any([name.endswith(ext) for ext in exts_xz]):
         import lzma
+
         yield name, lzma.decompress(content)
 
     if any([name.endswith(ext) for ext in exts_gz]):
         import gzip
+
         yield name, gzip.decompress(content)
 
     if any([name.endswith(ext) for ext in exts_bz2]):
         import bz2
+
         yield name, bz2.decompress(content)
 
     yield name, content
