@@ -1,12 +1,15 @@
 import logging
 import typing
 
-from intrigue.apt import models as apt_models
+from beartype import beartype
+
+from intrigue.apt import models as apt_models, constants as apt_constants
 from intrigue import utils
 
 logger = logging.getLogger(__name__)
 
 
+@beartype
 def paragraph(content: str) -> apt_models.Paragraph:
     """Parse string content into a Paragraph item."""
     lines = (content or "").strip().splitlines()
@@ -49,6 +52,7 @@ def paragraph(content: str) -> apt_models.Paragraph:
     return apt_models.Paragraph(fields=fields)
 
 
+@beartype
 def control(content: str) -> apt_models.Control:
     """Parse string content into a Control item."""
     lines = (content or "").strip().splitlines()
@@ -75,6 +79,7 @@ def control(content: str) -> apt_models.Control:
     return apt_models.Control(paragraphs=paragraphs)
 
 
+@beartype
 def release(content: str) -> apt_models.Release | None:
     """Parse string content into a Release item."""
     control_item = control(content)
@@ -137,3 +142,50 @@ def release(content: str) -> apt_models.Release | None:
     }
 
     return apt_models.Release(**data)
+
+
+@beartype
+def parse_repository(
+    url: str,
+    distributions: list[str] | str | None = None,
+    components: list[str] | str | None = None,
+    architectures: list[str] | str | None = None,
+    signed_by: str | None = None,
+) -> apt_models.RepositorySourceEntry:
+    """Parse a RepositorySourceEntry from an apt list file entry.
+
+    Args:
+        value: An apt list file entry.
+
+    Returns:
+        A RepositorySourceEntry.
+    """
+    match = apt_constants.RE_LIST_ENTRY.match(url)
+    if match:
+        groups = match.groupdict()
+
+        url = groups.get("url")
+        distributions = [groups.get("dist")]
+        components = (groups.get("comp") or "").split(" ")
+
+        extras1 = (groups.get("extras") or "").split("=")
+        extras = [e for i in extras1 for e in i.strip().rsplit(" ", maxsplit=1)]
+        available = dict(zip(*[iter(extras)] * 2))
+
+        architectures = available.get("arch", "").split(",")
+        signed_by = available.get("signed-by", "").strip()
+
+    if isinstance(distributions, str):
+        distributions = (distributions or "").split(" ")
+    if isinstance(components, str):
+        components = (components or "").split(" ")
+    if isinstance(architectures, str):
+        architectures = (architectures or "").split(" ")
+
+    return apt_models.RepositorySourceEntry(
+        url=url,
+        distributions=[i.strip() for i in distributions if i and i.strip()],
+        architectures=[i.strip() for i in architectures if i and i.strip()],
+        components=[i.strip() for i in components if i and i.strip()],
+        signed_by=signed_by,
+    )

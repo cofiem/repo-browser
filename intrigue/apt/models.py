@@ -7,12 +7,14 @@ import pathlib
 import typing
 
 import attrs
+from beartype import beartype
 
 from intrigue.gpg import models as gpg_models
 
 logger = logging.getLogger(__name__)
 
 
+@beartype
 @attrs.frozen
 class RepositorySourceEntry:
     """An entry in an apt list or sources file
@@ -33,24 +35,16 @@ class RepositorySourceEntry:
     signed_by: str | None = None
     """The url to the GPG public key used to verify files in this repository."""
 
-    def with_architectures(
-        self, values: list[str], action: str = "extend"
-    ) -> "RepositorySourceEntry":
+    def with_architectures(self, values: list[str], action: str = "extend"):
         return self._new_items(values, action, "architectures")
 
-    def with_components(
-        self, values: list[str], action: str = "extend"
-    ) -> "RepositorySourceEntry":
+    def with_components(self, values: list[str], action: str = "extend"):
         return self._new_items(values, action, "components")
 
-    def with_distributions(
-        self, values: list[str], action: str = "extend"
-    ) -> "RepositorySourceEntry":
+    def with_distributions(self, values: list[str], action: str = "extend"):
         return self._new_items(values, action, "distributions")
 
-    def with_signed_by(
-        self, value: str | pathlib.Path | None
-    ) -> "RepositorySourceEntry":
+    def with_signed_by(self, value: str | pathlib.Path | None):
         if not value:
             value = None
         elif isinstance(value, str) and value.strip() and value.startswith("http"):
@@ -61,9 +55,26 @@ class RepositorySourceEntry:
             raise ValueError(f"Unknown signed by value '{value}'.")
         return self._new_item(value, "signed_by")
 
-    def _new_items(
-        self, values: typing.Optional[list[str]], action: str, field: str
-    ) -> "RepositorySourceEntry":
+    #         # TODO: param_url can be a url or apt one-line list style
+    #         # TODO: using find.detect_landmarks to figure out where in the repo the url is located
+    #         #  TODO: allow searching apt repo, by guessing the path to the known files, parsing them, and showing matches
+    #         # build base url
+    #         parts = apt_utils.from_url(param_url)
+    #         kwargs = {
+    #             "repository": parts.netloc,
+    #             "directory": parts.path,
+    #         }
+
+    def as_querystring(self):
+        return {
+            "url": self.url,
+            "distribution": " ".join(self.distributions or []),
+            "component": " ".join(self.components or []),
+            "architecture": " ".join(self.architectures or []),
+            "sign_url": self.signed_by or "",
+        }
+
+    def _new_items(self, values: typing.Optional[list[str]], action: str, field: str):
         existing = getattr(self, field)
         if action == "extend":
             items = [*(existing or []), *(values or [])]
@@ -78,13 +89,14 @@ class RepositorySourceEntry:
             items = []
         return attrs.evolve(self, **{field: items})
 
-    def _new_item(self, value: str, field: str) -> "RepositorySourceEntry":
+    def _new_item(self, value: str, field: str):
         if value is not None and (not value or not value.strip()):
             # Allow None, but not empty strings
             raise ValueError(f"Cannot set empty string for {field}.")
         return attrs.evolve(self, **{field: value})
 
 
+@beartype
 @attrs.frozen
 class Field:
     """A field in a control file."""
@@ -93,6 +105,7 @@ class Field:
     values: list[str]
 
 
+@beartype
 @attrs.frozen
 class Paragraph:
     """A paragraph in a control file."""
@@ -106,6 +119,7 @@ class Paragraph:
         return None
 
 
+@beartype
 @attrs.frozen
 class Control:
     """A Debian apt control file."""
@@ -113,6 +127,7 @@ class Control:
     paragraphs: list[Paragraph] = attrs.field(factory=list)
 
 
+@beartype
 @enum.unique
 class FileHashType(enum.Enum):
     """Enumeration of available hash types."""
@@ -125,7 +140,7 @@ class FileHashType(enum.Enum):
     Sha512 = 4
 
     @classmethod
-    def digest_length(cls, name: "FileHashType") -> typing.Optional[int]:
+    def digest_length(cls, name) -> typing.Optional[int]:
         if not name:
             return None
         return {
@@ -136,7 +151,7 @@ class FileHashType(enum.Enum):
         }.get(name, None)
 
     @classmethod
-    def from_control_field(cls, name: str) -> "FileHashType":
+    def from_control_field(cls, name: str):
         known = {
             "MD5Sum": cls.Md5,
             "MD5sum": cls.Md5,
@@ -166,6 +181,7 @@ class FileHashType(enum.Enum):
         return cls.Sha512, cls.Sha256, cls.Sha1, cls.Md5
 
 
+@beartype
 @attrs.frozen
 class FileInfo:
     """Details about an APT file."""
@@ -182,6 +198,7 @@ class FileInfo:
     """The file size in bytes."""
 
 
+@beartype
 @attrs.frozen
 class Release:
     """An APT repository Release file."""
@@ -251,6 +268,7 @@ class Release:
     """
 
 
+@beartype
 @attrs.frozen
 class RepositoryRelease:
     """Possible Debian repository Release files."""

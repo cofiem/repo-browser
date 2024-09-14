@@ -1,6 +1,9 @@
 from collections import namedtuple
 from urllib.parse import urlsplit, urlunsplit, quote_plus, unquote, parse_qs
 
+import attrs
+from beartype import beartype
+
 
 def to_url(scheme: str, netloc: str, *args: str, **kwargs: str) -> str:
     if not netloc:
@@ -20,8 +23,17 @@ def to_url(scheme: str, netloc: str, *args: str, **kwargs: str) -> str:
     result = urlunsplit(parts)
     return result
 
+@beartype
+@attrs.frozen
+class SimpleUrl:
+    scheme:str
+    netloc: str
+    path: list[str]
+    query: dict[str, list[str]]
 
-SimpleUrl = namedtuple("SimpleUrl", ["scheme", "netloc", "path", "query"])
+    @property
+    def path_str(self) -> str:
+        return '/'.join(self.path)
 
 
 def from_url(url: str) -> SimpleUrl:

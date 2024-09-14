@@ -4,43 +4,125 @@
 
 {% block body %}
 
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+    <div class="container">
 
-<p>
-    Enter a Debian / Ubuntu
-    <a href="https://manpages.debian.org/bookworm/apt/sources.list.5.en.html">apt data source</a>:
-</p>
-<ul>
-    <li>the URI for the base of the Debian distribution</li>
-    <li>the one-line style format</li>
-</ul>
+        {% include 'discover/partial_messages.html' %}
 
-<form action="{% url 'discover:index' %}" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Browse">
-</form>
+        <h1>Repo Browser</h1>
 
-    <p>
-    TODO:
-    allow searching apt repo, by guessing the path to the known files, parsing them, and showing matches
-    </p>
-    
-<p>
-    Here are some examples:
-</p>
-<ul>
-    <li><a href="{% url 'discover:repository' 'ppa.launchpadcontent.net' 'deadsnakes/ppa/ubuntu' %}">deadsnakes PPA</a></li>
-    <li><a href="{% url 'discover:repository' 'download.docker.com' 'linux/ubuntu' %}{% querystring sign_url='https://download.docker.com/linux/ubuntu/gpg' %}">Docker repository</a></li>
-    <li><a href="{% url 'discover:repository' 'nginx.org' 'packages/ubuntu' %}{% querystring sign_url='https://nginx.org/keys/nginx_signing.key' %}">Nginx repository</a></li>
-    <li><a href="{% url 'discover:repository' 'apt.postgresql.org' 'pub/repos/apt' %}{% querystring sign_url='https://www.postgresql.org/media/keys/ACCC4CF8.asc' %}">PostgreSQL repository</a></li>
-    <li><a href="{% url 'discover:repository-netloc' 'apt.releases.hashicorp.com' %}{% querystring sign_url='https://apt.releases.hashicorp.com/gpg' %}">HashiCorp repository</a></li>
-    <li><a href="{% url 'discover:repository' 'dl.google.com' 'linux/chrome/deb' %}{% querystring sign_url=' https://dl.google.com/linux/linux_signing_key.pub' %}">Google Chrome repository</a></li>
-</ul>
-{% endblock %}
+        <p>
+            Enter a Debian / Ubuntu
+            <a href="https://manpages.debian.org/bookworm/apt/sources.list.5.en.html" target="_blank">apt data
+                source</a>.
+        </p>
+
+        <form action="{% url 'discover:index' %}" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <button type="submit" class="btn btn-primary">Browse</button>
+            <button type="reset" class="btn btn-secondary">Clear</button>
+        </form>
+
+        <h4 class="mt-4">Examples</h4>
+
+        <div id="examples" class="list-group mb-4"></div>
+
+    </div>
+
+{% endblock body %}
+
+{% block bottom_script %}
+    <script type="application/javascript">
+        function clickExample(event) {
+            const dataset = event.target.dataset;
+
+            document.getElementById("id_url").value = dataset.url.toString();
+            document.getElementById("id_sign_url").value = dataset.sign_url.toString();
+            document.getElementById("id_distribution").value = dataset.distribution.toString();
+            document.getElementById("id_component").value = dataset.component.toString();
+            document.getElementById("id_architecture").value = dataset.architecture.toString();
+        }
+
+        function addExample(example) {
+            const button = document.createElement("button");
+            button.className = "list-group-item list-group-item-action";
+            button.textContent = example.text;
+
+            button.dataset.url = example.url;
+            button.dataset.sign_url = example.sign_url;
+            button.dataset.distribution = example.distribution;
+            button.dataset.component = example.component;
+            button.dataset.architecture = example.architecture;
+
+            button.addEventListener("click", clickExample, false);
+
+            const elementExamples = document.getElementById("examples");
+            elementExamples.appendChild(button);
+        }
+
+
+        // links
+        const examples = [
+            {
+                text: "deadsnakes PPA as one-line-style list format",
+                url: 'deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu focal main',
+                sign_url: '',
+                distribution: '',
+                component: '',
+                architecture: '',
+            },
+            {
+                text: "deadsnakes apt PPA as deb822-style sources format",
+                url: 'https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu',
+                sign_url: '',
+                distribution: 'focal',
+                component: 'main',
+                architecture: '',
+            },
+            {
+                text: "Docker apt repository",
+                url: 'deb [arch=amd64 signed-by=https://download.docker.com/linux/ubuntu/gpg] https://download.docker.com/linux/ubuntu focal stable',
+                sign_url: '',
+                distribution: '',
+                component: '',
+                architecture: '',
+            },
+            {
+                text: "Nginx apt repository",
+                url: 'https://nginx.org/packages/ubuntu/',
+                sign_url: 'https://nginx.org/keys/nginx_signing.key',
+                distribution: 'focal',
+                component: 'stable',
+                architecture: 'amd64',
+            },
+            {
+                text: "PostgreSQL apt repository",
+                url: 'https://apt.postgresql.org/pub/repos/apt',
+                sign_url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc',
+                distribution: 'focal-pgdg',
+                component: 'main',
+                architecture: 'amd64',
+            },
+            {
+                text: "HashiCorp apt repository",
+                url: 'https://apt.releases.hashicorp.com',
+                sign_url: 'https://apt.releases.hashicorp.com/gpg',
+                distribution: 'focal',
+                component: 'main',
+                architecture: 'amd64 arm64',
+            },
+            {
+                text: "Google Chrome apt repository",
+                url: 'https://dl.google.com/linux/chrome/deb',
+                sign_url: 'https://dl.google.com/linux/linux_signing_key.pub',
+                distribution: '',
+                component: '',
+                architecture: '',
+            },
+        ];
+
+        for (const example of examples) {
+            addExample(example);
+        }
+    </script>
+{% endblock bottom_script %}

@@ -2,6 +2,8 @@ import http
 import pathlib
 import typing
 
+from beartype import beartype
+
 from intrigue.apt import (
     models as apt_models,
     constants as apt_constants,
@@ -23,6 +25,7 @@ from intrigue.http_client import HttpClient
 # messages.info(request, request.META.get("REMOTE_ADDR"))
 
 
+@beartype
 def get_links(client: HttpClient, url: str):
     status, html = client.get_text(url)
     if status != http.HTTPStatus.OK:
@@ -34,6 +37,7 @@ def get_links(client: HttpClient, url: str):
         return None
 
 
+@beartype
 def _filter(items: typing.Iterable[str], ignored: typing.Collection[str]):
     results = set()
     for item in items:
@@ -45,6 +49,7 @@ def _filter(items: typing.Iterable[str], ignored: typing.Collection[str]):
     return results
 
 
+@beartype
 def distributions(
     client: HttpClient, apt_src: apt_models.RepositorySourceEntry
 ) -> list[str]:
@@ -71,6 +76,7 @@ def distributions(
     return sorted(results)
 
 
+@beartype
 def components(
     client: HttpClient, apt_src: apt_models.RepositorySourceEntry
 ) -> list[str]:
@@ -101,6 +107,7 @@ def components(
     return sorted(results)
 
 
+@beartype
 def architectures(
     client: HttpClient, apt_src: apt_models.RepositorySourceEntry
 ) -> typing.Iterable[str]:
@@ -137,6 +144,7 @@ def architectures(
     return sorted(results)
 
 
+@beartype
 def release(client: HttpClient, apt_src: apt_models.RepositorySourceEntry, dist: str):
     dists = apt_constants.NAME_DISTS
     rel_combined = apt_constants.NAME_RELEASE_COMBINED
@@ -197,3 +205,11 @@ def release(client: HttpClient, apt_src: apt_models.RepositorySourceEntry, dist:
         }
 
     return {}
+
+
+@beartype
+def detect_landmarks(url: str):
+    """Try to discover where the url is in an apt repo,
+    by detecting landmarks by looking at the file listing for the given url."""
+    # TODO: use the functions in 'landmark'
+    raise NotImplementedError()

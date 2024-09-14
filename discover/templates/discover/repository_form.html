@@ -1,0 +1,16 @@
+{% for field in form %}
+    <div class="mb-3">
+        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {#        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">#}
+        {% if field.help_text %}
+            <div id="{{ field.id }}" class="form-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %}
+            <div class="invalid-feedback">
+                {{ field.errors }}
+            </div>
+        {% endif %}
+
+    </div>
+{% endfor %}

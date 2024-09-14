@@ -1,11 +1,15 @@
 from django.conf import settings
-from django.contrib import messages
 from django.http import HttpResponseRedirect, QueryDict
 from django.urls import reverse
 from django.views import generic
 
 from discover.forms import RepositoryForm
-from intrigue.apt import find, models as apt_models, utils as apt_utils
+from intrigue.apt import (
+    find,
+    models as apt_models,
+    utils as apt_utils,
+    operations as apt_operations,
+)
 
 
 class IndexView(generic.FormView):
@@ -15,23 +19,29 @@ class IndexView(generic.FormView):
     form_class = RepositoryForm
 
     def form_valid(self, form):
-        # build base url
-        parts = apt_utils.from_url(form.cleaned_data.get("url"))
+        param_url = form.cleaned_data.get("url")
+        param_distribution = form.cleaned_data.get("distribution")
+        param_component = form.cleaned_data.get("component")
+        param_architecture = form.cleaned_data.get("architecture")
+        param_sign_url = form.cleaned_data.get("sign_url")
+
+        repo = apt_operations.parse_repository(
+            param_url,
+            param_distribution,
+            param_component,
+            param_architecture,
+            param_sign_url,
+        )
+
+        parts = apt_utils.from_url(repo.url)
         kwargs = {
             "repository": parts.netloc,
-            "directory": parts.path,
+            "directory": parts.path_str,
         }
         url = reverse("discover:repository", kwargs=kwargs)
 
-        # add query if available
-        query = QueryDict(
-            {
-                "sign_url": form.cleaned_data.get("sign_url"),
-                "distribution": form.cleaned_data.get("distribution"),
-                "component": form.cleaned_data.get("component"),
-                "architecture": form.cleaned_data.get("architecture"),
-            }
-        )
+        query = QueryDict(mutable=True)
+        query.update(repo.as_querystring())
         if query:
             url += "?" + query.urlencode()
 
@@ -58,6 +68,7 @@ class RepositoryView(generic.TemplateView):
         html_listing = find.get_links(client, apt_src.url)
 
         # TODO: get each item async and show any file content?
+        # TODO: if exactly one dist is provided, build the url including it
 
         context = self.get_context_data(**kwargs)
         # context["apt_src"] = apt_src

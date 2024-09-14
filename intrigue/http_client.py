@@ -12,6 +12,7 @@ import logging
 import attrs
 import requests_cache
 import parsel
+from beartype import beartype
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ class HtmlListing:
     links: list[str]
 
 
+@beartype
 class HttpClient:
     """A http client and cache using requests_cache."""
 
@@ -111,7 +113,7 @@ class HttpClient:
         status = resp.status_code
         return status, resp.json() if status < 400 else None
 
-    def from_html(self, url: str, html: str) -> "HtmlListing":
+    def from_html(self, url: str, html: str) -> HtmlListing:
         selector = parsel.Selector(text=html)
 
         links = []

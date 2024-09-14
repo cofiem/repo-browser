@@ -7,6 +7,10 @@ NAME_DISTS = "dists"
 NAME_BY_HASH = "by-hash"
 NAME_POOL = "pool"
 NAME_I18N = "i18n"
+NAME_TOP_LISTING = "ls-lR.gz"
+NAME_PACKAGES = "Packages"
+NAME_CONTENTS = "Contents"
+
 COMPONENTS_DIR_IGNORE = {
     i.casefold()
     for i in [
@@ -16,7 +20,7 @@ COMPONENTS_DIR_IGNORE = {
         NAME_BY_HASH,
         "changelog",
         NAME_POOL,
-        "Contents-",
+        f"{NAME_CONTENTS}-",
     ]
 }
 DISTRIBUTIONS_DIR_IGNORE = {
