@@ -5,7 +5,8 @@ import attrs
 from beartype import beartype
 
 
-def to_url(scheme: str, netloc: str, *args: str, **kwargs: str) -> str:
+@beartype
+def to_url(scheme: str, netloc: str, *args: str | None, **kwargs: str | None) -> str:
     if not netloc:
         raise ValueError("Must provide netloc.")
     if not scheme:
@@ -23,19 +24,24 @@ def to_url(scheme: str, netloc: str, *args: str, **kwargs: str) -> str:
     result = urlunsplit(parts)
     return result
 
+
 @beartype
 @attrs.frozen
 class SimpleUrl:
-    scheme:str
+    scheme: str
     netloc: str
     path: list[str]
     query: dict[str, list[str]]
 
     @property
     def path_str(self) -> str:
-        return '/'.join(self.path)
+        return "/".join(self.path)
+
+    def with_name(self, name: str):
+        pass
 
 
+@beartype
 def from_url(url: str) -> SimpleUrl:
     parts = urlsplit(url)
     result = SimpleUrl(
@@ -45,3 +51,10 @@ def from_url(url: str) -> SimpleUrl:
         parse_qs(parts.query),
     )
     return result
+
+
+@beartype
+def build_url(base: str, path: list[str]) -> str:
+    parts = from_url(base)
+    url = to_url(parts.scheme, parts.netloc, *parts.path, *path)
+    return url

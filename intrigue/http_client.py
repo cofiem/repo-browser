@@ -14,15 +14,23 @@ import requests_cache
 import parsel
 from beartype import beartype
 
+from intrigue.apt import utils
+
 logger = logging.getLogger(__name__)
 
 
+@beartype
 @attrs.frozen
 class HtmlListing:
     """A html page that lists the contents of a directory."""
 
     url: str
     links: list[str]
+
+    @property
+    def urls(self):
+        for link in self.links:
+            yield utils.build_url(self.url, [link])
 
 
 @beartype
@@ -40,11 +48,11 @@ class HttpClient:
     user_agent = "repo-browser (+https://github.com/cofiem/repo-browser)"
 
     def __init__(
-        self,
-        cache_file: typing.Optional[pathlib.Path],
-        expire_after: typing.Optional[datetime.timedelta] = None,
-        throttle_time: typing.Optional[datetime.timedelta] = None,
-        use_cache_control: bool = False,
+            self,
+            cache_file: typing.Optional[pathlib.Path],
+            expire_after: typing.Optional[datetime.timedelta] = None,
+            throttle_time: typing.Optional[datetime.timedelta] = None,
+            use_cache_control: bool = False,
     ):
         if not cache_file:
             raise ValueError("Cache path must be provided.")
@@ -98,17 +106,17 @@ class HttpClient:
     def session(self) -> requests_cache.CachedSession:
         return self._session
 
-    def get_text(self, url: str) -> tuple[int, str]:
+    def get_text(self, url: str) -> tuple[int, str | None]:
         resp = self.session.get(url)
         status = resp.status_code
         return status, resp.text if status < 400 else None
 
-    def get_raw(self, url: str) -> tuple[int, bytes]:
+    def get_raw(self, url: str) -> tuple[int, bytes | None]:
         resp = self.session.get(url)
         status = resp.status_code
         return status, resp.content if status < 400 else None
 
-    def get_json(self, url: str) -> tuple[int, bytes]:
+    def get_json(self, url: str) -> tuple[int, list | dict | None]:
         resp = self.session.get(url)
         status = resp.status_code
         return status, resp.json() if status < 400 else None

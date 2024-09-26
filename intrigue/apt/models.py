@@ -1,14 +1,16 @@
 """Models for repository data."""
-
+import csv
 import datetime
 import enum
 import logging
 import pathlib
 import typing
+from importlib.resources import files
 
 import attrs
 from beartype import beartype
 
+from intrigue import utils
 from intrigue.gpg import models as gpg_models
 
 logger = logging.getLogger(__name__)
@@ -218,25 +220,25 @@ class Release:
     In Debian, this shall be one of oldstable, stable, testing, unstable, 
     or experimental; with optional suffixes such as -updates."""
 
-    version: str
+    version: str | None
     """The Version field, if specified, shall be the version of the release. 
     This is usually a sequence of integers separated by the character . (full stop). """
 
-    codename: str
+    codename: str | None
     """The Codename field shall describe the codename of the release. 
     A codename is a single word."""
 
-    changelogs: str
+    changelogs: str | None
     """The Changelogs field tells the client where to find changelogs, usually a URL."""
 
     date: datetime.datetime
     """The Date field shall specify the time at which the Release file was created."""
 
-    valid_until: datetime.datetime
+    valid_until: datetime.datetime | None
     """The Valid-Until field may specify at which time the Release file 
     should be considered expired by the client. """
 
-    no_support_for_architecture_all: str
+    no_support_for_architecture_all: str | None
     """decouple the introduction of indexes like Contents-all 
     from the introduction of Packages-all."""
 
@@ -249,16 +251,16 @@ class Release:
     the directory beneath dists, if the Release file is not 
     in a directory directly beneath dists/."""
 
-    description: str
+    description: str | None = ''
     """Free-text description of the contents covered by the Release file."""
 
-    acquire_by_hash: str
+    acquire_by_hash: str | None = 'no'
     """A boolean, defaults to 'no'.
     A value of "yes" indicates that the server supports 
     the optional "by-hash" locations as an alternative 
     to the canonical location (and name) of an index file."""
 
-    hashes: list[FileInfo]
+    hashes: list[FileInfo] = attrs.field(factory=list)
     """Describe the package index files present.
     When release signature is available it certifies 
     that listed index files and files referenced by those index files are genuine.
@@ -279,3 +281,25 @@ class RepositoryRelease:
     """The signature used to sign the Release file."""
     public_key: gpg_models.PublicKeyPacket | None = None
     """The public key used to verify the signature."""
+
+@beartype
+@attrs.frozen
+class AptRepoKnownNames:
+    group: str
+    category: str
+    value: str
+    title: str
+
+    @classmethod
+    def from_resources_csv_file(cls):
+        resource_name = "intrigue.resources.repos-apt.csv"
+        with files(utils.get_name_under()).joinpath(resource_name).open('r', encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                yield AptRepoKnownNames(
+                    group=row.get('group', ''),
+                    category=row.get('category', ''),
+                    value=row.get('value', ''),
+                    title=row.get('title', ''),
+                )
+

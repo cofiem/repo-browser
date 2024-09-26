@@ -6,6 +6,7 @@ import enum
 import typing
 
 import attrs
+from beartype import beartype
 
 from intrigue.utils import get_name_under
 
@@ -18,7 +19,7 @@ FOOTER_SUFFIX = INDICATOR
 NAME_SIGNED_MESSAGE = "SIGNED MESSAGE"
 NAME_SIGNATURE = "SIGNATURE"
 
-
+@beartype
 @enum.unique
 class PacketTag(enum.Enum):
     """
@@ -78,7 +79,7 @@ class PacketTag(enum.Enum):
     PRIVATE_63 = 63
     """Private or Experimental Values"""
 
-
+@beartype
 @attrs.frozen
 class NativePacket:
     """
@@ -96,7 +97,7 @@ class NativePacket:
     body: bytes
     """The raw body value."""
 
-
+@beartype
 @attrs.define
 class ArmoredSection:
     """
@@ -199,7 +200,7 @@ class ArmoredSection:
             if i and i.strip()
         ]
 
-
+@beartype
 @attrs.frozen
 class SignaturePacket(NativePacket):
     """
@@ -210,7 +211,7 @@ class SignaturePacket(NativePacket):
 
     pass
 
-
+@beartype
 @attrs.frozen
 class SignedMessagePacket(NativePacket):
     """
@@ -221,7 +222,7 @@ class SignedMessagePacket(NativePacket):
 
     pass
 
-
+@beartype
 @attrs.frozen
 class PublicKeyPacket(NativePacket):
     """
@@ -232,10 +233,10 @@ class PublicKeyPacket(NativePacket):
 
     pass
 
-
+@beartype
 @attrs.frozen
 class Message:
-    items: list[ArmoredSection | NativePacket] = attrs.field(factory=list)
+    items: list[ArmoredSection | NativePacket | dict] = attrs.field(factory=list)
 
     @property
     def signed_message(self):
@@ -260,14 +261,14 @@ class Message:
         else:
             raise ValueError(f"Found multiple '{name}'.")
 
-
+@beartype
 class InvalidMessageArmorRadix64FormatException(ValueError):
     pass
 
-
+@beartype
 class InvalidMessageArmorRadix64CheckException(ValueError):
     pass
 
-
+@beartype
 class InvalidMessageNativeFormatException(ValueError):
     pass

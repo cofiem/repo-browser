@@ -1,12 +1,17 @@
 import logging
+import re
 import typing
 
 from beartype import beartype
 
-from intrigue.apt import models as apt_models, constants as apt_constants
+from intrigue.apt import models as apt_models
 from intrigue import utils
 
 logger = logging.getLogger(__name__)
+
+RE_LIST_ENTRY: re.Pattern[str] = re.compile(
+    rf"^deb(-src)?\s*(\[(?P<extras>(\s*\S+\s*=\s*\S+\s*)*)])?\s*(?P<url>\S+)\s+(?P<dist>\S+)\s+(?P<comp>.+)$"
+)
 
 
 @beartype
@@ -80,7 +85,7 @@ def control(content: str) -> apt_models.Control:
 
 
 @beartype
-def release(content: str) -> apt_models.Release | None:
+def release(url: str, content: str) -> apt_models.Release | None:
     """Parse string content into a Release item."""
     control_item = control(content)
 
@@ -135,7 +140,7 @@ def release(content: str) -> apt_models.Release | None:
         "origin": _get("Origin"),
         "suite": _get("Suite"),
         "version": _get("Version"),
-        "url": None,
+        "url": url,
         "changelogs": None,
         "no_support_for_architecture_all": None,
         "valid_until": None,
@@ -152,15 +157,8 @@ def parse_repository(
     architectures: list[str] | str | None = None,
     signed_by: str | None = None,
 ) -> apt_models.RepositorySourceEntry:
-    """Parse a RepositorySourceEntry from an apt list file entry.
-
-    Args:
-        value: An apt list file entry.
-
-    Returns:
-        A RepositorySourceEntry.
-    """
-    match = apt_constants.RE_LIST_ENTRY.match(url)
+    """Parse a RepositorySourceEntry from an apt list file entry."""
+    match = RE_LIST_ENTRY.match(url)
     if match:
         groups = match.groupdict()
 

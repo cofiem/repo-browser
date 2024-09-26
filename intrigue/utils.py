@@ -4,27 +4,28 @@ from __future__ import annotations
 
 import io
 import pathlib
-from datetime import datetime
 import typing
 import zoneinfo
+from datetime import datetime
 from importlib.metadata import PackageNotFoundError, distribution
 from importlib.resources import as_file, files
 
 import attrs
 import cattrs
-from django.template.defaultfilters import yesno
+from beartype import beartype
 
 
+@beartype
 def get_name_dash() -> str:
     """Get the package name with word separated by dashes."""
     return "repo-browser"
 
-
+@beartype
 def get_name_under() -> str:
     """Get the package name with word separated by underscores."""
     return "repo_browser"
 
-
+@beartype
 def get_version() -> typing.Optional[str]:
     """Get the package version."""
     try:
@@ -43,8 +44,9 @@ def get_version() -> typing.Optional[str]:
 
     return None
 
-
+@beartype
 def load_data_item(data_class, data: typing.Mapping[str, typing.Any]):
+    """Populate data classes from a data map."""
     available_fields = attrs.fields_dict(data_class)
     prog_key = get_name_under()
     mapping_fields = {
@@ -61,7 +63,7 @@ def load_data_item(data_class, data: typing.Mapping[str, typing.Any]):
     result = cattrs.structure(result_raw, data_class)
     return result
 
-
+@beartype
 def get_date(value: str):
     if not value or not value.strip():
         return None
@@ -88,20 +90,28 @@ def get_date(value: str):
             pass
     raise ValueError(f"Cannot parse date {value}.")
 
-
+ARCHIVE_EXTENSIONS = {
+    "xz": [".xz", ".lzma"],
+    "gz": [".gz", ".gzip"],
+    "bz2": [".bz2", ".bzip2"],
+    "tar": [".tar"],
+    "zip": [".zip"],
+}
+@beartype
+def archive_extensions(name: str):
+    for group, items in ARCHIVE_EXTENSIONS.items():
+        for item in items:
+            yield f"{name}{item}"
+@beartype
 def read(
     name: str, content: bytes
 ) -> typing.Generator[tuple[str, bytes], typing.Any, None]:
     """Read the content with the given name and generate the raw content it contains."""
-    exts_xz = [".xz", ".lzma"]
-    exts_gz = [".gz", ".gzip"]
-    exts_bz2 = [".bz2", ".bzip2"]
-    ext_tar = ".tar"
-    ext_zip = ".zip"
 
     path_name = pathlib.Path(name)
+    suffixes = path_name.suffixes
 
-    if ext_tar in path_name.suffixes:
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['tar']):
         import tarfile
 
         with io.BytesIO(content) as bio, tarfile.open(name, "r|*", bio) as container:
@@ -110,7 +120,7 @@ def read(
                 if file_content is not None:
                     yield element.name, file_content.read()
 
-    if ext_zip in path_name.suffixes:
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['zip']):
         import zipfile
 
         with io.BytesIO(content) as bio, zipfile.ZipFile(bio, "r") as container:
@@ -121,17 +131,17 @@ def read(
                     if file_content is not None:
                         yield element.filename, file_content.read()
 
-    if any([name.endswith(ext) for ext in exts_xz]):
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['xz']):
         import lzma
 
         yield name, lzma.decompress(content)
 
-    if any([name.endswith(ext) for ext in exts_gz]):
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['gz']):
         import gzip
 
         yield name, gzip.decompress(content)
 
-    if any([name.endswith(ext) for ext in exts_bz2]):
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['bz2']):
         import bz2
 
         yield name, bz2.decompress(content)

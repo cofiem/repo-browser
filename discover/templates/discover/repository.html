@@ -3,24 +3,39 @@
 {% block title %}Repo Browser | Repository {{ repository }} at {{ directory }}{% endblock %}
 
 {% block body %}
+    <div class="container">
+        <h1 class="display-4">Repository</h1>
 
-    <h3><a href="/">home</a></h3>
-    
-    <h3>Directory browser
-        <small><a href="{{ html_listing.url }}">{{ repository }} at {{ directory }}</a></small>
-    </h3>
-    <ul>
-        {% for link in html_listing.links %}
-            <li><a href="{% url 'discover:repository' repository directory %}{{ link }}">{{ link }}</a></li>
-        {% endfor %}
-    </ul>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-chevron p-3 bg-body-tertiary rounded-3">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item" aria-current="location"><a
+                        href="{% url 'discover:repository' repository directory %}">Repository</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ directory }}</li>
+            </ol>
+        </nav>
 
-    <h3>Structure browser</h3>
-    <p>TODO: parsed repo contents</p>
+        <p>View the source page <a href="{{ html_listing.url }}">{{ repository }} at {{ directory }}</a></p>
+
+        <h3>Directory browser</h3>
+        <ul>
+            {% for link in html_listing.links %}
+                <li><a href="{% url 'discover:repository' repository directory %}{{ link }}">{{ link }}</a></li>
+            {% endfor %}
+        </ul>
+
+        <h4>Release Found</h4>
+        <p>{{ release_info }}</p>
     
-    <h3>File viewer</h3>
-    <p>TODO: view file content</p>
-    
-    <p>TODO: do things async</p>
-    
+        <h4>Release Data</h4>
+        <p>{{ release_data }}</p>
+
+        <h3>Structure browser</h3>
+        <p>TODO: parsed repo contents</p>
+
+        <h3>File viewer</h3>
+        <p>TODO: view file content</p>
+
+        <p>TODO: do things async</p>
+    </div>
 {% endblock %}

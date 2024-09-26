@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.http import HttpResponseRedirect, QueryDict
-from django.urls import reverse
+from django.urls import reverse, NoReverseMatch
 from django.views import generic
 
 from discover.forms import RepositoryForm
@@ -10,6 +10,8 @@ from intrigue.apt import (
     utils as apt_utils,
     operations as apt_operations,
 )
+from intrigue.apt.landmark import KnownItem
+from intrigue.gpg import message_armor_radix64, message_native
 
 
 class IndexView(generic.FormView):
@@ -34,11 +36,10 @@ class IndexView(generic.FormView):
         )
 
         parts = apt_utils.from_url(repo.url)
-        kwargs = {
-            "repository": parts.netloc,
-            "directory": parts.path_str,
-        }
-        url = reverse("discover:repository", kwargs=kwargs)
+        try:
+            url = reverse("discover:repository", kwargs={"repository": parts.netloc, "directory": parts.path_str})
+        except NoReverseMatch:
+            url = reverse("discover:repository-netloc", kwargs={"repository": parts.netloc})
 
         query = QueryDict(mutable=True)
         query.update(repo.as_querystring())
@@ -57,25 +58,58 @@ class RepositoryView(generic.TemplateView):
         repository = kwargs.get("repository")
         directory = kwargs.get("directory")
         client = settings.BACKEND_HTTP_CLIENT
-        apt_src = apt_models.RepositorySourceEntry(
+
+        repo_src = apt_operations.parse_repository(
             url=apt_utils.to_url("https", repository, directory),
-            distributions=kwargs.get("distribution", "").split(" "),
-            components=kwargs.get("component", "").split(" "),
-            architectures=kwargs.get("architecture", "").split(" "),
-            signed_by=kwargs.get("signed"),
+            distributions=kwargs.get("distribution") or request.GET.get("distribution") or None,
+            components=kwargs.get("component") or request.GET.get("component") or None,
+            architectures=kwargs.get("architecture") or request.GET.get("architecture") or None,
+            signed_by=kwargs.get("signed") or request.GET.get("sign_url") or None,
         )
 
-        html_listing = find.get_links(client, apt_src.url)
+        html_listing = find.get_links(client, repo_src.url)
+        dist = repo_src.distributions[0] if repo_src.distributions else 'jammy'
+        release_info = find.release(client, repo_src, dist)
+        if release_info:
+            info = release_info.get(KnownItem.RELEASE_COMBINED.value)
+            info_url = info.get('url')
+            info_content = info.get('content')
+
+            gpg_msg = message_armor_radix64.read(info_content)
+            gpg_sig = message_native.read(gpg_msg.signature.data)
+
+            release_data = apt_operations.release(info_url, gpg_msg.signed_message.text)
+
+            if repo_src.signed_by:
+                gpg_key_result, gpg_key_content = client.get_raw(repo_src.signed_by)
+                gpg_key = message_armor_radix64.read(gpg_key_content)
+            else:
+                gpg_key = None
+
+            # apt_models.RepositoryRelease(
+            #     release = release_data,
+            #     signature=gpg_sig.signature,
+            #     public_key=gpg_key,
+            # )
+
+        else:
+            release_data = None
+            gpg_key = None
+        # found_url, landmark = find.detect_landmarks(client, repo_src)
 
         # TODO: get each item async and show any file content?
         # TODO: if exactly one dist is provided, build the url including it
 
         context = self.get_context_data(**kwargs)
-        # context["apt_src"] = apt_src
+        # context["repo_Src"] = repo_Src
         # context["dists"] = dists
         # context["comps"] = comps
         # context["archs"] = archs
         context["html_listing"] = html_listing
+        context["directory"] = directory or '/'
+        context["release_info"] = release_info
+        context["release_data"] = release_data
+        context["gpg_key"] = gpg_key
         return self.render_to_response(context)
 
 
