@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":prConcurrentLimit10",
+    ":automergeDisabled"
+  ],
+  "baseBranchPatterns": [
+    "main"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update variables specifying version numbers in files.",
+      "managerFilePatterns": [
+        "/.*\\.ya?ml$/",
+        "/.*\\.pkr\\.hcl/",
+        "/.*\\.sh$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s+datasource=(?<datasource>\\S+?)\\s+packageName=(?<packageName>\\S+)(?:\\s+depName=(?<depName>\\S+?))?(?:\\s+datasourceTemplate=(?<datasourceTemplate>\\S+?))?(?:\\s+versioning=(?<versioning>\\S+?))?(?:\\s+extractVersion=(?<extractVersion>\\S+?))?(?:\\s+depType=(?<depType>\\S+?))?(?:\\s+registryUrl=(?<registryUrl>\\S+?))?(?:\\s+currentDigest=(?<currentDigest>\\S+?))?\\s+[A-Za-z0-9_]*_?(version|VERSION|default)\\s*[:=]\\s*[\"']?(?<currentValue>.+?)[\"']?\\s"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    }
+  ]
+}
