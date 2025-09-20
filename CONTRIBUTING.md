@@ -4,26 +4,25 @@
 
 Use `BUILDKIT_PROGRESS=plain` before the docker compose commands to see all the output.
 
-### To upgrade dependencies
-
 ```shell
-docker build --target base .
-docker compose run --rm upgrade_deps
-```
+# To upgrade dependencies
+docker compose run --build --rm upgrade_deps
 
-### Start local server
-
-```shell
-docker build --target dev_app .
-docker compose up --menu=false dev_app
+# Start local server
+docker compose up --build --menu=false dev_app
+# Stop local server
 docker compose down dev_app
-```
 
-### To get the contents of the python3-apt package locally
-
-```shell
+# To get the contents of the python3-apt package locally
 docker build --target export_deps --output export_deps .
+
+# To run manage.py commands
+docker compose run --build --rm dev_app python manage.py
+
+# To run tests
+docker compose run --build --rm dev_app pytest -n auto --cov=discover --cov=examine --cov=intrigue
 ```
+
 
 ## Run tests and linters
 

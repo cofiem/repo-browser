@@ -1,3 +1,7 @@
 -c requirements.txt
 django-debug-toolbar
 ruff
+pytest
+pytest-django
+pytest-cov
+pytest-xdist

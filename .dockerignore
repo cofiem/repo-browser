@@ -1,4 +1,8 @@
+.github/
 .venv/
-static_collected/
 export_deps/
-*.sqlite3
+static_collected/
+.coverage
+CHANGELOG.md
+CONTRIBUTING.md
+renovate.json
