@@ -1,0 +1,14 @@
+# web
+Django==6.0a1
+daphne==4.1.2
+
+# remote repos
+requests==2.32.5
+requests-cache==1.2.1
+parsel==1.9.1
+
+# models
+attrs==24.2.0
+
+# typing
+beartype==0.19.0rc1
