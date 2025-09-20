@@ -48,7 +48,7 @@ def packet_tag(data: bytes):
     if bit7 != 0x80:
         raise models.InvalidMessageNativeFormatException(
             "Expected bit 7 value to be 1,"
-            f"but got '{'{0:08b}'.format(first_octet)}'."
+            f"but got '{f'{first_octet:08b}'}'."
         )
 
     # "Bit 6 -- New packet format if set"

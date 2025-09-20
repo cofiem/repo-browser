@@ -1,17 +1,17 @@
 """Utilities for data."""
 
-from __future__ import annotations
+
 
 import io
 import pathlib
 import typing
-import zoneinfo
 from datetime import datetime
 from importlib.metadata import PackageNotFoundError, distribution
 from importlib.resources import as_file, files
 
 import attrs
 import cattrs
+import zoneinfo
 from beartype import beartype
 
 

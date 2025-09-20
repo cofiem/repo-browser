@@ -1,17 +1,16 @@
 """Manages web requests."""
 
-from __future__ import annotations
+
 
 import datetime
+import logging
 import pathlib
 import time
 import typing
 
-import logging
-
 import attrs
-import requests_cache
 import parsel
+import requests_cache
 from beartype import beartype
 
 from intrigue.apt import utils

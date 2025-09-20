@@ -150,7 +150,7 @@ class FileHashType(enum.Enum):
             cls.Sha1: 40,
             cls.Sha256: 64,
             cls.Sha512: 128,
-        }.get(name, None)
+        }.get(name)
 
     @classmethod
     def from_control_field(cls, name: str):

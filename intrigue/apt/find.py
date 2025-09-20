@@ -4,13 +4,16 @@ import typing
 
 from beartype import beartype
 
+from intrigue import http_client
 from intrigue.apt import (
-    models as apt_models,
-    utils as apt_utils,
     landmark,
 )
-
-from intrigue import http_client
+from intrigue.apt import (
+    models as apt_models,
+)
+from intrigue.apt import (
+    utils as apt_utils,
+)
 from intrigue.apt.landmark import KnownItem
 
 # TODO: https://s3.amazonaws.com/repo.mongodb.org/

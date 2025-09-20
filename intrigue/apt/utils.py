@@ -1,5 +1,4 @@
-from collections import namedtuple
-from urllib.parse import urlsplit, urlunsplit, quote_plus, unquote, parse_qs
+from urllib.parse import parse_qs, quote_plus, unquote, urlsplit, urlunsplit
 
 import attrs
 from beartype import beartype
@@ -13,7 +12,7 @@ def to_url(scheme: str, netloc: str, *args: str | None, **kwargs: str | None) ->
         scheme = "https"
 
     if args:
-        path = "/".join((arg for arg in args if str(arg or "").strip()))
+        path = "/".join(arg for arg in args if str(arg or "").strip())
     else:
         path = ""
 

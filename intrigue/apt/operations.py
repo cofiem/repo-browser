@@ -4,13 +4,13 @@ import typing
 
 from beartype import beartype
 
-from intrigue.apt import models as apt_models
 from intrigue import utils
+from intrigue.apt import models as apt_models
 
 logger = logging.getLogger(__name__)
 
 RE_LIST_ENTRY: re.Pattern[str] = re.compile(
-    rf"^deb(-src)?\s*(\[(?P<extras>(\s*\S+\s*=\s*\S+\s*)*)])?\s*(?P<url>\S+)\s+(?P<dist>\S+)\s+(?P<comp>.+)$"
+    r"^deb(-src)?\s*(\[(?P<extras>(\s*\S+\s*=\s*\S+\s*)*)])?\s*(?P<url>\S+)\s+(?P<dist>\S+)\s+(?P<comp>.+)$"
 )
 
 
@@ -110,7 +110,7 @@ def release(url: str, content: str) -> apt_models.Release | None:
                 if not v or not v.strip():
                     continue
                 hash_type = apt_models.FileHashType.from_control_field(name)
-                hash_value, size_bytes, rel_url = [i for i in v.split(" ") if i]
+                hash_value, size_bytes, rel_url = (i for i in v.split(" ") if i)
                 result.append(
                     apt_models.FileInfo(
                         url_relative=rel_url,

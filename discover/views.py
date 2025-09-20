@@ -1,17 +1,20 @@
 from django.conf import settings
 from django.http import HttpResponseRedirect, QueryDict
-from django.urls import reverse, NoReverseMatch
+from django.urls import NoReverseMatch, reverse
 from django.views import generic
-
-from discover.forms import RepositoryForm
 from intrigue.apt import (
     find,
-    models as apt_models,
-    utils as apt_utils,
+)
+from intrigue.apt import (
     operations as apt_operations,
+)
+from intrigue.apt import (
+    utils as apt_utils,
 )
 from intrigue.apt.landmark import KnownItem
 from intrigue.gpg import message_armor_radix64, message_native
+
+from discover.forms import RepositoryForm
 
 
 class IndexView(generic.FormView):

@@ -1,6 +1,6 @@
 """Domain models for PGP data."""
 
-from __future__ import annotations
+
 
 import enum
 import typing
@@ -209,7 +209,6 @@ class SignaturePacket(NativePacket):
     Ref: https://datatracker.ietf.org/doc/html/draft-koch-openpgp-2015-rfc4880bis#section-5.2
     """
 
-    pass
 
 @beartype
 @attrs.frozen
@@ -220,7 +219,6 @@ class SignedMessagePacket(NativePacket):
     Ref: https://datatracker.ietf.org/doc/html/draft-koch-openpgp-2015-rfc4880bis#section-7
     """
 
-    pass
 
 @beartype
 @attrs.frozen
@@ -231,7 +229,6 @@ class PublicKeyPacket(NativePacket):
     Ref: https://datatracker.ietf.org/doc/html/draft-koch-openpgp-2015-rfc4880bis#section-5.5.2
     """
 
-    pass
 
 @beartype
 @attrs.frozen
