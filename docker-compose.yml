@@ -26,3 +26,8 @@ services:
       - PIP_TOOLS_CACHE_DIR=/opt/repo-browser/.pip-tools-cache
     volumes:
       - ./:/opt/repo-browser/src
+    command:
+      - "python"
+      - "manage.py"
+      - "runserver"
+      - "0.0.0.0:80"

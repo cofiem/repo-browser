@@ -146,3 +146,7 @@ if DEBUG and not IS_RUNNING_TESTS:
         "debug_toolbar.middleware.DebugToolbarMiddleware",
         *MIDDLEWARE,
     ]
+    INTERNAL_IPS = [
+        *INTERNAL_IPS,
+        "172.18.0.1",
+    ]

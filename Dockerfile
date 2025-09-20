@@ -111,9 +111,6 @@ RUN --mount=type=cache,target=/opt/repo-browser/.pip-cache \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     pip-sync requirements.txt
 
-# Copy the source code into the container.
-COPY --chown=appuser:appgroup . /opt/repo-browser/src/
-
 # Copy the built python-apt wheel
 COPY --from=build_deps /opt/python-apt/dist/python_apt* /tmp/
 RUN --mount=type=cache,target=/opt/repo-browser/.pip-cache \
@@ -122,9 +119,6 @@ RUN --mount=type=cache,target=/opt/repo-browser/.pip-cache \
 
 # Switch to the non-privileged user to run the application.
 USER appuser
-
-# Run the application.
-CMD ["daphne", "examine.asgi:application", "-b=0.0.0.0", "-p=80"]
 
 FROM base_app AS dev_app
 
@@ -136,4 +130,22 @@ RUN --mount=type=cache,target=/opt/repo-browser/.pip-cache \
     --mount=type=bind,source=dev-requirements.txt,target=dev-requirements.txt \
     pip-sync requirements.txt dev-requirements.txt
 
+# Copy the source code into the container.
+COPY --chown=appuser:appgroup . /opt/repo-browser/src/
+
 USER appuser
+
+# Run the application.
+CMD ["manage.py", "runserver", "0.0.0.0:80"]
+
+FROM base_app AS prod_app
+
+USER root
+
+# Copy the source code into the container.
+COPY --chown=appuser:appgroup . /opt/repo-browser/src/
+
+USER appuser
+
+# Run the application.
+CMD ["daphne", "examine.asgi:application", "-b=0.0.0.0", "-p=80"]
