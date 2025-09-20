@@ -7,7 +7,7 @@ Use `BUILDKIT_PROGRESS=plain` before the docker compose commands to see all the 
 ### To upgrade dependencies
 
 ```shell
-docker build --target upgrade_deps .
+docker build --target base .
 docker compose run --rm upgrade_deps
 ```
 
