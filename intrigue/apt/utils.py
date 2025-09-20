@@ -44,10 +44,10 @@ class SimpleUrl:
 def from_url(url: str) -> SimpleUrl:
     parts = urlsplit(url)
     result = SimpleUrl(
-        parts.scheme,
-        parts.netloc,
-        [unquote(p) for p in parts.path.split("/") if p and p.strip()],
-        parse_qs(parts.query),
+        scheme=parts.scheme,
+        netloc=parts.netloc,
+        path=[unquote(p) for p in parts.path.split("/") if p and p.strip()],
+        query=parse_qs(parts.query),
     )
     return result
 

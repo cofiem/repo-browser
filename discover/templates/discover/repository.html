@@ -10,7 +10,7 @@
             <ol class="breadcrumb breadcrumb-chevron p-3 bg-body-tertiary rounded-3">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item" aria-current="location"><a
-                        href="{% url 'discover:repository' repository directory %}">Repository</a></li>
+                        href="{% url 'discover:repository-netloc' repository %}">{{ repository }}</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{ directory }}</li>
             </ol>
         </nav>

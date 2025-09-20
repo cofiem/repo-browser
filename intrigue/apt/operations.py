@@ -10,7 +10,7 @@ from intrigue.apt import models as apt_models
 logger = logging.getLogger(__name__)
 
 RE_LIST_ENTRY: re.Pattern[str] = re.compile(
-    r"^deb(-src)?\s*(\[(?P<extras>(\s*\S+\s*=\s*\S+\s*)*)])?\s*(?P<url>\S+)\s+(?P<dist>\S+)\s+(?P<comp>.+)$"
+    r"^deb(-src)?\s*(\[(?P<extras>(\s*\S+?\s*=\s*\S+?\s*)*)])?\s*(?P<url>\S+)\s+(?P<dist>\S+)\s+(?P<comp>.+)$"
 )
 
 
@@ -151,39 +151,52 @@ def release(url: str, content: str) -> apt_models.Release | None:
 
 @beartype
 def parse_repository(
-    url: str,
+    url: str | None,
     distributions: list[str] | str | None = None,
     components: list[str] | str | None = None,
     architectures: list[str] | str | None = None,
     signed_by: str | None = None,
-) -> apt_models.RepositorySourceEntry:
+) -> apt_models.RepositorySourceEntry | None:
     """Parse a RepositorySourceEntry from an apt list file entry."""
-    match = RE_LIST_ENTRY.match(url)
-    if match:
-        groups = match.groupdict()
+    if url is None:
+        return None
 
-        url = groups.get("url")
-        distributions = [groups.get("dist")]
-        components = (groups.get("comp") or "").split(" ")
+    match = RE_LIST_ENTRY.match(url)
+
+    groups = match.groupdict() if match else {}
+    url = url if not match else groups.get("url")
+
+    result = apt_models.RepositorySourceEntry(url=url)
+    result = result.with_distributions(source_split(distributions))
+    result = result.with_components(source_split(components))
+    result = result.with_architectures(source_split(architectures))
+    raw_signed_by = str(signed_by).strip() if signed_by else ""
+    if raw_signed_by:
+        result = result.with_signed_by(raw_signed_by)
+
+    if match:
+        result = result.with_distributions(source_split(groups.get("dist")))
+        result = result.with_components(source_split(groups.get("comp")))
 
         extras1 = (groups.get("extras") or "").split("=")
         extras = [e for i in extras1 for e in i.strip().rsplit(" ", maxsplit=1)]
         available = dict(zip(*[iter(extras)] * 2))
+        raw_archs = available.get("arch", "").split(",")
 
-        architectures = available.get("arch", "").split(",")
-        signed_by = available.get("signed-by", "").strip()
+        result = result.with_architectures(source_split(raw_archs))
 
-    if isinstance(distributions, str):
-        distributions = (distributions or "").split(" ")
-    if isinstance(components, str):
-        components = (components or "").split(" ")
-    if isinstance(architectures, str):
-        architectures = (architectures or "").split(" ")
+        raw_signed_by = (available.get("signed-by", "") or "").strip()
+        if not result.signed_by and raw_signed_by:
+            result = result.with_signed_by(raw_signed_by)
 
-    return apt_models.RepositorySourceEntry(
-        url=url,
-        distributions=[i.strip() for i in distributions if i and i.strip()],
-        architectures=[i.strip() for i in architectures if i and i.strip()],
-        components=[i.strip() for i in components if i and i.strip()],
-        signed_by=signed_by,
-    )
+    return result
+
+@beartype
+def source_split(value: list[str] | str | None) -> list[str]:
+    if not value:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str):
+        return (value or "").split(" ")
+    raise ValueError(value)

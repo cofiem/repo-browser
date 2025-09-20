@@ -10,6 +10,7 @@ from intrigue.utils import load_data_item
 
 logger = logging.getLogger(__name__)
 
+
 @beartype
 def read(content: bytes) -> models.Message:
     """Read bytes content."""
@@ -20,6 +21,7 @@ def read(content: bytes) -> models.Message:
             "Content is not UTF-8 text."
         ) from e
     return message_lines(data)
+
 
 @beartype
 def message_lines(data: typing.Iterable[str]) -> models.Message:
@@ -72,13 +74,16 @@ def message_lines(data: typing.Iterable[str]) -> models.Message:
 
     return models.Message(items=packets)
 
+
 @beartype
 def packet_header(line: str) -> typing.Optional[str]:
     return _packet_boundary(line, models.HEADER_PREFIX, models.HEADER_SUFFIX)
 
+
 @beartype
 def packet_footer(line: str) -> typing.Optional[str]:
     return _packet_boundary(line, models.FOOTER_PREFIX, models.FOOTER_SUFFIX)
+
 
 @beartype
 def _packet_boundary(line: str, prefix: str, suffix: str) -> typing.Optional[str]:
@@ -90,6 +95,7 @@ def _packet_boundary(line: str, prefix: str, suffix: str) -> typing.Optional[str
         logger.debug("Found packet boundary '%s' (%s).", name, which)
         return name
     return None
+
 
 @beartype
 def packet_lines(lines: typing.Iterable[str]) -> models.ArmoredSection:
@@ -217,6 +223,7 @@ def packet_lines(lines: typing.Iterable[str]) -> models.ArmoredSection:
     result = load_data_item(models.ArmoredSection, packet_data)
     return result
 
+
 @beartype
 def decode_crc(value: str) -> int:
     """
@@ -232,6 +239,7 @@ def decode_crc(value: str) -> int:
     logger.debug(f"Decoded CRC '{crc_value}'.")
     return crc_value
 
+
 @beartype
 def verify_crc(message_data: bytes, expected_crc: int):
     actual_crc = calculate_crc(message_data)
@@ -240,6 +248,7 @@ def verify_crc(message_data: bytes, expected_crc: int):
             f"CRC does not match. Expected '{expected_crc}' actual '{actual_crc}'."
         )
     logger.debug(f"Successfully verified CRC '{actual_crc}'.")
+
 
 @beartype
 def decode_base64(value: str):
@@ -252,6 +261,7 @@ def decode_base64(value: str):
     line_encoded = value.encode(encoding="utf-8")
     line_decoded = base64.b64decode(line_encoded, validate=True)
     return line_decoded
+
 
 @beartype
 def calculate_crc(value: bytes) -> int:
@@ -279,6 +289,7 @@ def calculate_crc(value: bytes) -> int:
 
     logger.debug("Calculated CRC '%s'.", result)
     return result
+
 
 # def verify_signed_message(
 #         self,

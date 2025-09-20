@@ -63,7 +63,6 @@ ARCHITECTURES_DIR_IGNORE = {
 }
 
 
-
 @beartype
 def get_links(client: http_client.HttpClient, url: str):
     status, html = client.get_text(url)
@@ -185,7 +184,9 @@ def architectures(
 
 @beartype
 def release(
-    client: http_client.HttpClient, repo_src: apt_models.RepositorySourceEntry, dist: str
+    client: http_client.HttpClient,
+    repo_src: apt_models.RepositorySourceEntry,
+    dist: str,
 ):
     dists = KnownItem.DISTS.value
     rel_combined = KnownItem.RELEASE_COMBINED.value
@@ -251,7 +252,7 @@ def release(
 @beartype
 def detect_landmarks(
     client: http_client.HttpClient, repo_src: apt_models.RepositorySourceEntry
-)-> tuple[str|None, landmark.Landmark|None]:
+) -> tuple[str | None, landmark.Landmark | None]:
     """Try to discover where the url is in an apt repo,
     by detecting landmarks by looking at the file listing for the given url."""
     url = repo_src.url
@@ -298,9 +299,10 @@ def detect_landmarks(
 
     # use the found urls from the html listing
     # and compare to the built landmarks
-    listing = get_links(client, comps_url)
-    for found_url in html_listing.urls:
-        for landmark_item in landmarks:
-            if landmark_item.match(found_url):
-                return found_url, landmark_item
+    # TODO
+    # listing = get_links(client, comps_url)
+    # for found_url in html_listing.urls:
+    #     for landmark_item in landmarks:
+    #         if landmark_item.match(found_url):
+    #             return found_url, landmark_item
     return None, None

@@ -21,6 +21,10 @@ docker compose run --build --rm dev_app python manage.py
 
 # To run tests
 docker compose run --build --rm dev_app pytest -n auto --cov=discover --cov=examine --cov=intrigue
+
+# To run ruff formatter and linter
+docker compose run --build --rm dev_app ruff format discover examine intrigue
+docker compose run --build --rm dev_app ruff check --fix discover examine intrigue
 ```
 
 

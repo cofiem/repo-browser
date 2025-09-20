@@ -1,4 +1,5 @@
 """Models for repository data."""
+
 import csv
 import datetime
 import enum
@@ -84,7 +85,7 @@ class RepositorySourceEntry:
             items = values
         else:
             raise ValueError(
-                f"Unknown action '{action}'. " "Expected 'extend' or 'replace'."
+                f"Unknown action '{action}'. Expected 'extend' or 'replace'."
             )
         items = sorted(set(i.strip() for i in items if i and i.strip()))
         if not items:
@@ -215,7 +216,7 @@ class Release:
     label: str
     """Optional field including some kind of label, a single line of free form text."""
 
-    suite: str
+    suite: str | None
     """The Suite field may describe the suite. A suite is a single word.
     In Debian, this shall be one of oldstable, stable, testing, unstable, 
     or experimental; with optional suffixes such as -updates."""
@@ -251,10 +252,10 @@ class Release:
     the directory beneath dists, if the Release file is not 
     in a directory directly beneath dists/."""
 
-    description: str | None = ''
+    description: str | None = ""
     """Free-text description of the contents covered by the Release file."""
 
-    acquire_by_hash: str | None = 'no'
+    acquire_by_hash: str | None = "no"
     """A boolean, defaults to 'no'.
     A value of "yes" indicates that the server supports 
     the optional "by-hash" locations as an alternative 
@@ -282,6 +283,7 @@ class RepositoryRelease:
     public_key: gpg_models.PublicKeyPacket | None = None
     """The public key used to verify the signature."""
 
+
 @beartype
 @attrs.frozen
 class AptRepoKnownNames:
@@ -293,13 +295,16 @@ class AptRepoKnownNames:
     @classmethod
     def from_resources_csv_file(cls):
         resource_name = "intrigue.resources.repos-apt.csv"
-        with files(utils.get_name_under()).joinpath(resource_name).open('r', encoding="utf-8") as f:
+        with (
+            files(utils.get_name_under())
+            .joinpath(resource_name)
+            .open("r", encoding="utf-8") as f
+        ):
             reader = csv.DictReader(f)
             for row in reader:
                 yield AptRepoKnownNames(
-                    group=row.get('group', ''),
-                    category=row.get('category', ''),
-                    value=row.get('value', ''),
-                    title=row.get('title', ''),
+                    group=row.get("group", ""),
+                    category=row.get("category", ""),
+                    value=row.get("value", ""),
+                    title=row.get("title", ""),
                 )
-

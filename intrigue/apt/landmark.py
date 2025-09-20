@@ -18,7 +18,6 @@ class MatchType(enum.Enum):
 @beartype
 @enum.unique
 class KnownItem(enum.Enum):
-
     UNKNOWN = ""
     RELEASE_COMBINED = "InRelease"
     RELEASE_DETACHED = "Release.gpg"
@@ -30,6 +29,7 @@ class KnownItem(enum.Enum):
     TOP_LISTING = "ls-lR.gz"
     PACKAGES = "Packages"
     CONTENTS = "Contents"
+
 
 @beartype
 @attrs.frozen

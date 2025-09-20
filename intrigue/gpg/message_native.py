@@ -47,8 +47,7 @@ def packet_tag(data: bytes):
     bit7 = first_octet & 0x80
     if bit7 != 0x80:
         raise models.InvalidMessageNativeFormatException(
-            "Expected bit 7 value to be 1,"
-            f"but got '{f'{first_octet:08b}'}'."
+            f"Expected bit 7 value to be 1,but got '{f'{first_octet:08b}'}'."
         )
 
     # "Bit 6 -- New packet format if set"
@@ -99,7 +98,9 @@ def packet_info_old(data: bytes):
         header_length = 1
 
     else:
-        raise models.InvalidMessageNativeFormatException(f"Length type {length_type} is not supported.")
+        raise models.InvalidMessageNativeFormatException(
+            f"Length type {length_type} is not supported."
+        )
 
     return tag, packet_length, header_length
 
@@ -129,9 +130,7 @@ def packet_info_new(data: bytes):
         # packet lengths of 192 to 8383 octets."
         # "It is recognized because its first octet
         # is in the range 192 to 223."
-        packet_length = (
-                ((first_header_octet - 192) << 8) + second_header_octet + 192
-        )
+        packet_length = ((first_header_octet - 192) << 8) + second_header_octet + 192
         header_length = 2
 
     elif first_header_octet == 255:
@@ -161,7 +160,9 @@ def packet_info_new(data: bytes):
         raise NotImplementedError("Packet Partial Body Lengths are not supported.")
 
     else:
-        raise models.InvalidMessageNativeFormatException(f"Body length header {first_header_octet} is not supported.")
+        raise models.InvalidMessageNativeFormatException(
+            f"Body length header {first_header_octet} is not supported."
+        )
 
     return tag, packet_length, header_length
 
@@ -181,16 +182,14 @@ def signature_sub_packet_info(content: bytes):
         sub_packet_len = first_header_octet
     elif 192 <= first_header_octet < 255:
         length_len = 2
-        sub_packet_len = (
-                ((first_header_octet - 192) << 8) + (second_header_octet) + 192
-        )
+        sub_packet_len = ((first_header_octet - 192) << 8) + (second_header_octet) + 192
     elif first_header_octet == 255:
         length_len = 5
         sub_packet_len = _to_int(content[1:5])
     else:
         raise ValueError("Invalid sub-packet header.")
 
-    sub_packet_type = _to_int(content[length_len: length_len + 1])
+    sub_packet_type = _to_int(content[length_len : length_len + 1])
     return length_len, sub_packet_len, sub_packet_type
 
 
@@ -296,15 +295,15 @@ def signature_v4(content: bytes):
 
     # TODO
     return {
-        'version': version,
-        'sig_type': sig_type,
-        'public_key_alg': public_key_alg,
-        'hash_algorithm': hash_algorithm,
-        'hashed_data_len': hashed_data_len,
-        'signed_hash_value': signed_hash_value,
-        'hashed_sub_packets': hashed_sub_packets,
-        'unhashed_sub_packets': unhashed_sub_packets,
-        'remaining': remaining,
+        "version": version,
+        "sig_type": sig_type,
+        "public_key_alg": public_key_alg,
+        "hash_algorithm": hash_algorithm,
+        "hashed_data_len": hashed_data_len,
+        "signed_hash_value": signed_hash_value,
+        "hashed_sub_packets": hashed_sub_packets,
+        "unhashed_sub_packets": unhashed_sub_packets,
+        "remaining": remaining,
     }
 
 
@@ -336,9 +335,7 @@ def signature_sub_packets(content: bytes):
         remaining = remaining[sub_packet_end:]
 
         if item_type == 2:
-            items.append(
-                (item_type, "Signature Creation Time", _to_datetime(body))
-            )
+            items.append((item_type, "Signature Creation Time", _to_datetime(body)))
         elif item_type == 16:
             items.append((item_type, "Issuer", body))
         elif item_type == 33:
@@ -350,9 +347,7 @@ def signature_sub_packets(content: bytes):
                 )
             )
         else:
-            raise NotImplementedError(
-                f"Subpacket tag {item_type} is not supported."
-            )
+            raise NotImplementedError(f"Subpacket tag {item_type} is not supported.")
 
     return items
 
@@ -399,11 +394,11 @@ def public_key_v4(content: bytes):
 
     # TODO
     return {
-        'version': version,
-        'created': created,
-        'public_key_alg': public_key_alg,
-        'mpi_length': mpi_length,
-        'mpi_value': mpi_value,
+        "version": version,
+        "created": created,
+        "public_key_alg": public_key_alg,
+        "mpi_length": mpi_length,
+        "mpi_value": mpi_value,
     }
 
 

@@ -1,7 +1,5 @@
 """Manages web requests."""
 
-
-
 import datetime
 import logging
 import pathlib
@@ -47,11 +45,11 @@ class HttpClient:
     user_agent = "repo-browser (+https://github.com/cofiem/repo-browser)"
 
     def __init__(
-            self,
-            cache_file: typing.Optional[pathlib.Path],
-            expire_after: typing.Optional[datetime.timedelta] = None,
-            throttle_time: typing.Optional[datetime.timedelta] = None,
-            use_cache_control: bool = False,
+        self,
+        cache_file: typing.Optional[pathlib.Path],
+        expire_after: typing.Optional[datetime.timedelta] = None,
+        throttle_time: typing.Optional[datetime.timedelta] = None,
+        use_cache_control: bool = False,
     ):
         if not cache_file:
             raise ValueError("Cache path must be provided.")
@@ -71,6 +69,7 @@ class HttpClient:
             backend=self._backend,
             expire_after=self._expire_after,
             cache_control=self._use_cache_control,
+            allowable_codes=(200,404,403),
         )
 
         self._throttle_time = (
@@ -108,16 +107,19 @@ class HttpClient:
     def get_text(self, url: str) -> tuple[int, str | None]:
         resp = self.session.get(url)
         status = resp.status_code
+        self._log(resp)
         return status, resp.text if status < 400 else None
 
     def get_raw(self, url: str) -> tuple[int, bytes | None]:
         resp = self.session.get(url)
         status = resp.status_code
+        self._log(resp)
         return status, resp.content if status < 400 else None
 
     def get_json(self, url: str) -> tuple[int, list | dict | None]:
         resp = self.session.get(url)
         status = resp.status_code
+        self._log(resp)
         return status, resp.json() if status < 400 else None
 
     def from_html(self, url: str, html: str) -> HtmlListing:
@@ -151,3 +153,10 @@ class HttpClient:
             raise ValueError("Unknown html directory listing format.")
 
         return HtmlListing(url=url, links=sorted(links))
+
+    def _log(self, resp):
+        logger.warning("GET %s '%s' (%s): %s",
+                       resp.status_code,
+                       resp.headers.get('content-type', ""),
+                       'cache' if resp.from_cache else 'fresh',
+                       resp.url)

@@ -1,7 +1,5 @@
 """Domain models for PGP data."""
 
-
-
 import enum
 import typing
 
@@ -18,6 +16,7 @@ FOOTER_SUFFIX = INDICATOR
 
 NAME_SIGNED_MESSAGE = "SIGNED MESSAGE"
 NAME_SIGNATURE = "SIGNATURE"
+
 
 @beartype
 @enum.unique
@@ -79,6 +78,7 @@ class PacketTag(enum.Enum):
     PRIVATE_63 = 63
     """Private or Experimental Values"""
 
+
 @beartype
 @attrs.frozen
 class NativePacket:
@@ -96,6 +96,7 @@ class NativePacket:
     """The raw header value."""
     body: bytes
     """The raw body value."""
+
 
 @beartype
 @attrs.define
@@ -200,6 +201,7 @@ class ArmoredSection:
             if i and i.strip()
         ]
 
+
 @beartype
 @attrs.frozen
 class SignaturePacket(NativePacket):
@@ -258,13 +260,16 @@ class Message:
         else:
             raise ValueError(f"Found multiple '{name}'.")
 
+
 @beartype
 class InvalidMessageArmorRadix64FormatException(ValueError):
     pass
 
+
 @beartype
 class InvalidMessageArmorRadix64CheckException(ValueError):
     pass
+
 
 @beartype
 class InvalidMessageNativeFormatException(ValueError):

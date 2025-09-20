@@ -1,4 +1,5 @@
 group,category,value,title
+debian,codename,trixie,version 13 first released 2025
 debian,codename,bookworm,version 12 first released 2023
 debian,codename,bullseye,version 11 first released 2021
 debian,codename,buster,version 10 first released 2019
@@ -72,3 +73,12 @@ common,arch,mipsel,
 common,arch,ppc64el,
 common,arch,riscv64,
 common,arch,s390x,
+known-name,file,InRelease,Release combined file
+known-name,file,Release.gpg,Release detached gpg file
+known-name,file,Release,Release clear file
+known-name,dir,dists,distributions directory
+known-name,dir,by-hash,by hash directory
+known-name,dir,i18n,i18n directory
+known-name,file,ls-lR.gz,top listing file
+known-name,file,Packages,packages listing file
+known-name,file,Contents,contents listing file

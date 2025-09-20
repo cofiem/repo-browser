@@ -40,9 +40,14 @@ class IndexView(generic.FormView):
 
         parts = apt_utils.from_url(repo.url)
         try:
-            url = reverse("discover:repository", kwargs={"repository": parts.netloc, "directory": parts.path_str})
+            url = reverse(
+                "discover:repository",
+                kwargs={"repository": parts.netloc, "directory": parts.path_str},
+            )
         except NoReverseMatch:
-            url = reverse("discover:repository-netloc", kwargs={"repository": parts.netloc})
+            url = reverse(
+                "discover:repository-netloc", kwargs={"repository": parts.netloc}
+            )
 
         query = QueryDict(mutable=True)
         query.update(repo.as_querystring())
@@ -64,19 +69,25 @@ class RepositoryView(generic.TemplateView):
 
         repo_src = apt_operations.parse_repository(
             url=apt_utils.to_url("https", repository, directory),
-            distributions=kwargs.get("distribution") or request.GET.get("distribution") or None,
+            distributions=kwargs.get("distribution")
+            or request.GET.get("distribution")
+            or None,
             components=kwargs.get("component") or request.GET.get("component") or None,
-            architectures=kwargs.get("architecture") or request.GET.get("architecture") or None,
+            architectures=kwargs.get("architecture")
+            or request.GET.get("architecture")
+            or None,
             signed_by=kwargs.get("signed") or request.GET.get("sign_url") or None,
         )
 
         html_listing = find.get_links(client, repo_src.url)
-        dist = repo_src.distributions[0] if repo_src.distributions else 'jammy'
-        release_info = find.release(client, repo_src, dist)
-        if release_info:
+        dist = repo_src.distributions[0] if repo_src.distributions else "jammy"
+        release_info = None
+        # release_info = find.release(client, repo_src, dist)
+        # if release_info:
+        if False:
             info = release_info.get(KnownItem.RELEASE_COMBINED.value)
-            info_url = info.get('url')
-            info_content = info.get('content')
+            info_url = info.get("url")
+            info_content = info.get("content")
 
             gpg_msg = message_armor_radix64.read(info_content)
             gpg_sig = message_native.read(gpg_msg.signature.data)
@@ -109,7 +120,7 @@ class RepositoryView(generic.TemplateView):
         # context["comps"] = comps
         # context["archs"] = archs
         context["html_listing"] = html_listing
-        context["directory"] = directory or '/'
+        context["directory"] = directory or "/"
         context["release_info"] = release_info
         context["release_data"] = release_data
         context["gpg_key"] = gpg_key

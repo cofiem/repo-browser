@@ -135,6 +135,31 @@
                 component: 'main',
                 architecture: 'amd64',
             },
+            {
+                text: "Linux Mint repository",
+                url: 'https://mirror.aarnet.edu.au/pub/linuxmint-packages/',
+                sign_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x302f0738f465c1535761f965a6616109451bbbf2',
+                distribution: 'zara',
+                component: 'main',
+                architecture: 'amd64',
+            },
+            {
+                text: "Ubuntu repository",
+                url: 'https://mirror.aarnet.edu.au/pub/ubuntu/archive/',
+                sign_url: 'https://mirror.aarnet.edu.au/pub/ubuntu/archive/project/ubuntu-archive-keyring.gpg',
+                distribution: 'noble',
+                component: 'main',
+                architecture: 'amd64',
+            },
+            {
+                // https://ftp-master.debian.org/keys.html
+                text: "Debian repository",
+                url: 'https://mirror.aarnet.edu.au/pub/debian/',
+                sign_url: 'https://ftp-master.debian.org/keys/archive-key-13.asc',
+                distribution: 'trixie',
+                component: 'main',
+                architecture: 'amd64',
+            },
         ];
 
         for (const example of examples) {

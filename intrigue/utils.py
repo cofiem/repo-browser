@@ -1,7 +1,5 @@
 """Utilities for data."""
 
-
-
 import io
 import pathlib
 import typing
@@ -20,10 +18,12 @@ def get_name_dash() -> str:
     """Get the package name with word separated by dashes."""
     return "repo-browser"
 
+
 @beartype
 def get_name_under() -> str:
     """Get the package name with word separated by underscores."""
     return "repo_browser"
+
 
 @beartype
 def get_version() -> typing.Optional[str]:
@@ -44,6 +44,7 @@ def get_version() -> typing.Optional[str]:
 
     return None
 
+
 @beartype
 def load_data_item(data_class, data: typing.Mapping[str, typing.Any]):
     """Populate data classes from a data map."""
@@ -62,6 +63,7 @@ def load_data_item(data_class, data: typing.Mapping[str, typing.Any]):
         result_raw[field_name] = value
     result = cattrs.structure(result_raw, data_class)
     return result
+
 
 @beartype
 def get_date(value: str):
@@ -90,6 +92,7 @@ def get_date(value: str):
             pass
     raise ValueError(f"Cannot parse date {value}.")
 
+
 ARCHIVE_EXTENSIONS = {
     "xz": [".xz", ".lzma"],
     "gz": [".gz", ".gzip"],
@@ -97,11 +100,15 @@ ARCHIVE_EXTENSIONS = {
     "tar": [".tar"],
     "zip": [".zip"],
 }
+
+
 @beartype
 def archive_extensions(name: str):
     for group, items in ARCHIVE_EXTENSIONS.items():
         for item in items:
             yield f"{name}{item}"
+
+
 @beartype
 def read(
     name: str, content: bytes
@@ -111,7 +118,7 @@ def read(
     path_name = pathlib.Path(name)
     suffixes = path_name.suffixes
 
-    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['tar']):
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS["tar"]):
         import tarfile
 
         with io.BytesIO(content) as bio, tarfile.open(name, "r|*", bio) as container:
@@ -120,7 +127,7 @@ def read(
                 if file_content is not None:
                     yield element.name, file_content.read()
 
-    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['zip']):
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS["zip"]):
         import zipfile
 
         with io.BytesIO(content) as bio, zipfile.ZipFile(bio, "r") as container:
@@ -131,17 +138,17 @@ def read(
                     if file_content is not None:
                         yield element.filename, file_content.read()
 
-    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['xz']):
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS["xz"]):
         import lzma
 
         yield name, lzma.decompress(content)
 
-    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['gz']):
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS["gz"]):
         import gzip
 
         yield name, gzip.decompress(content)
 
-    if set(suffixes).intersection(ARCHIVE_EXTENSIONS['bz2']):
+    if set(suffixes).intersection(ARCHIVE_EXTENSIONS["bz2"]):
         import bz2
 
         yield name, bz2.decompress(content)
