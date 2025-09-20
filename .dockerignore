@@ -1,2 +1,4 @@
 .venv/
+static_collected/
+export_deps/
 *.sqlite3

@@ -1,0 +1,28 @@
+volumes: {}
+
+services:
+  upgrade_deps:
+    build:
+      context: .
+      target: base
+    environment:
+      # Specify where pip and pip-tools caches are to be able to maintain the cache properly.
+      - PIP_CACHE_DIR=/opt/repo-browser/.pip-cache
+      - PIP_TOOLS_CACHE_DIR=/opt/repo-browser/.pip-tools-cache
+    volumes:
+      - ./:/opt/repo-browser/src
+    command:
+      - bin/upgrade-deps.sh
+
+  dev_app:
+    build:
+      context: .
+      target: dev_app
+    ports:
+      - "127.0.0.1:80:80"
+    environment:
+      # Specify where pip and pip-tools caches are to be able to maintain the cache properly.
+      - PIP_CACHE_DIR=/opt/repo-browser/.pip-cache
+      - PIP_TOOLS_CACHE_DIR=/opt/repo-browser/.pip-tools-cache
+    volumes:
+      - ./:/opt/repo-browser/src

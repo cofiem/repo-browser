@@ -1,4 +1,24 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:38387523653efa0039f8e1c89bb74a30504e76ee9f565e25c9a09841f9427b05
+FROM python:3.13.7-trixie@sha256:4e75b1a51bb46acbc640392917f513e4a3a0206547233fb553ea160b06a73af0 AS base
+
+# Prevents Python from writing pyc files to reudce issues from pyc files not being updated.
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Keeps Python from buffering stdout and stderr to avoid situations where
+# the application crashes without emitting any logs due to buffering.
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /opt/repo-browser/src
+
+ENV PIP_CACHE_DIR=/opt/repo-browser/.pip-cache
+ENV PIP_TOOLS_CACHE_DIR=/opt/repo-browser/.pip-tools-cache
+
+RUN --mount=type=cache,target=/opt/repo-browser/.pip-cache \
+    --mount=type=cache,target=/opt/repo-browser/.pip-tools-cache \
+    python -m pip --disable-pip-version-check install --root-user-action ignore --upgrade pip pip-tools
+
+
+FROM base AS build_deps
 
 # Build and install 'python-apt'.
 # Check which version of debian this image is: https://hub.docker.com/_/python/
@@ -6,65 +26,114 @@
 # Find the tag name in the git repo: https://salsa.debian.org/apt-team/python-apt/-/commits/main/?ref_type=HEADS
 # See also: https://github.com/drakkar-lig/python-apt-binary/blob/main/scripts/build.sh
 
-FROM debian:bookworm AS build
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Update apt cache and install apt dependencies.
-RUN DEBIAN_FRONTEND=noninteractive apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
       git \
       python3 \
       python3-dev \
       python3-venv
 
-# Clone git repo and checkout relevant tag or commit.
-RUN git clone https://salsa.debian.org/apt-team/python-apt.git /opt/python-apt \
-    && cd /opt/python-apt \
+# Clone git repo.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    git clone https://salsa.debian.org/apt-team/python-apt.git /opt/python-apt
+
+# checkout relevant tag or commit
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    cd /opt/python-apt  \
     && git checkout $(apt search python3-apt | grep 'python3-apt/' | awk '{print $2}') \
       || git checkout $(git log --oneline | grep -i "Release $(apt search python3-apt | grep 'python3-apt/' | awk '{print $2}')" | awk '{print $1}')
 
 # Install the build requirements.
-RUN cd /opt/python-apt \
-    && DEBIAN_FRONTEND=noninteractive apt build-dep -y --no-install-recommends ./
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    cd /opt/python-apt \
+    && apt-get build-dep -y --no-install-recommends ./
 
 # Create virtualenv to build the package.
-RUN cd /opt/python-apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    cd /opt/python-apt \
     && mkdir /opt/python-apt-wheels \
     && python3 -m venv .venv \
-    && .venv/bin/python -m pip install -U pip
+    && .venv/bin/python -m pip install -U pip setuptools wheel
 
 # Build the wheel
-RUN cd /opt/python-apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    cd /opt/python-apt \
     && DEBVAR=$(apt search python3-apt | grep 'python3-apt/' | awk '{print $2}') \
       .venv/bin/python setup.py build
 
-RUN cd /opt/python-apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    cd /opt/python-apt \
     && .venv/bin/python -m pip install -U build \
-    && .venv/bin/python -m build --wheel
+    && .venv/bin/python -m build --wheel \
+    && .venv/bin/python -m wheel unpack --dest /tmp/python-apt /opt/python-apt/dist/python_apt*
 
-FROM python:3.11 AS run
+FROM scratch AS export_deps
 
-WORKDIR /usr/src/app
+COPY --from=build_deps /opt/python-apt/dist /tmp/python-apt ./export_deps/
 
-COPY requirements.txt ./
-COPY --from=build /opt/python-apt/dist/python_apt* /tmp/
-RUN pip install --no-cache-dir -r requirements.txt /tmp/python_apt*
+FROM base AS base_app
 
-COPY . .
+# Create a non-privileged user that the app will run under.
+# See https://docs.docker.com/go/dockerfile-user-best-practices/
+ARG UID=10001
+ARG GID=10001
+RUN addgroup \
+    --gid "${GID}" \
+    appgroup \
+    && adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --comment "python app user" \
+    --no-create-home \
+    --uid "${UID}" \
+    --gid "${GID}" \
+    appuser
 
-EXPOSE 8001
+# Download dependencies as a separate step to take advantage of Docker's caching.
+# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
+# Leverage a bind mount to requirements.txt to avoid having to copy them into
+# into this layer.
+RUN --mount=type=cache,target=/opt/repo-browser/.pip-cache \
+    --mount=type=cache,target=/opt/repo-browser/.pip-tools-cache \
+    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    pip-sync requirements.txt
 
-CMD ["python", "-m", "daphne", "-b", "0.0.0.0", "-p", "8001", "examine.asgi:application"]
+# Copy the source code into the container.
+COPY --chown=appuser:appgroup . /opt/repo-browser/src/
 
-FROM python:3.11 AS dev
+# Copy the built python-apt wheel
+COPY --from=build_deps /opt/python-apt/dist/python_apt* /tmp/
+RUN --mount=type=cache,target=/opt/repo-browser/.pip-cache \
+    --mount=type=cache,target=/opt/repo-browser/.pip-tools-cache \
+    pip install --root-user-action ignore --no-cache-dir /tmp/python_apt*
 
-WORKDIR /usr/src/app
+# Switch to the non-privileged user to run the application.
+USER appuser
 
-COPY requirements.txt requirements-dev.txt ./
-COPY --from=build /opt/python-apt/dist/python_apt* /tmp/
-RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt /tmp/python_apt*
+# Run the application.
+CMD ["daphne", "examine.asgi:application", "-b=0.0.0.0", "-p=80"]
 
-COPY . .
+FROM base_app AS dev_app
 
-EXPOSE 8001
+USER root
 
-CMD ["python", "-m", "daphne", "-b", "0.0.0.0", "-p", "8001", "examine.asgi:application"]
+RUN --mount=type=cache,target=/opt/repo-browser/.pip-cache \
+    --mount=type=cache,target=/opt/repo-browser/.pip-tools-cache \
+    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    --mount=type=bind,source=dev-requirements.txt,target=dev-requirements.txt \
+    pip-sync requirements.txt dev-requirements.txt
+
+USER appuser
