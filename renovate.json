@@ -8,6 +8,21 @@
   "baseBranchPatterns": [
     "main"
   ],
+  "managerFilePatterns": [
+    {
+      "pip-compile": {
+        "managerFilePatterns": [
+          "/(^|/)[^/]*requirements\\.txt$/"
+        ]
+      },
+      "pip_requirements": {
+        "enabled": false
+      },
+      "pip_setup": {
+        "enabled": false
+      }
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
