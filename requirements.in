@@ -5,7 +5,7 @@ daphne==4.1.2
 # remote repos
 requests==2.32.5
 requests-cache==1.2.1
-parsel==1.9.1
+parsel==1.10.0
 
 # models
 attrs==24.2.0
