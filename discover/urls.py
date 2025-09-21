@@ -1,10 +1,15 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 
 app_name = "discover"
 urlpatterns = [
-    path("", views.IndexView.as_view(), name="index"),
+    path(
+        "",
+        views.IndexView.as_view(),
+        name="index",
+    ),
     path(
         "repository/<repository>/<path:directory>/",
         views.RepositoryView.as_view(),
@@ -16,8 +21,8 @@ urlpatterns = [
         name="repository-netloc",
     ),
     path(
-        "item/<repository>/<path:directory>/<item>/",
-        views.ItemView.as_view(),
-        name="item",
+        "repository/",
+        RedirectView.as_view(url="", permanent=False),
+        name="repository-to-index",
     ),
 ]

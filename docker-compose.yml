@@ -31,3 +31,15 @@ services:
       - "manage.py"
       - "runserver"
       - "0.0.0.0:80"
+
+  dev_runner:
+    build:
+      context: .
+      target: dev_app
+    ports: []
+    environment:
+      # Specify where pip and pip-tools caches are to be able to maintain the cache properly.
+      - PIP_CACHE_DIR=/opt/repo-browser/.pip-cache
+      - PIP_TOOLS_CACHE_DIR=/opt/repo-browser/.pip-tools-cache
+    volumes:
+      - ./:/opt/repo-browser/src

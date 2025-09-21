@@ -12,6 +12,8 @@ import cattrs
 import zoneinfo
 from beartype import beartype
 
+from intrigue.apt.utils import AptException
+
 
 @beartype
 def get_name_dash() -> str:
@@ -59,7 +61,7 @@ def load_data_item(data_class, data: typing.Mapping[str, typing.Any]):
     for key, value in data.items():
         field_name = mapping_fields.get(key)
         if not field_name:
-            raise ValueError(f"Missing field {key}={value}.")
+            raise AptException(f"Missing field {key}={value}.")
         result_raw[field_name] = value
     result = cattrs.structure(result_raw, data_class)
     return result
@@ -90,7 +92,7 @@ def get_date(value: str):
             pass
         except zoneinfo.ZoneInfoNotFoundError:
             pass
-    raise ValueError(f"Cannot parse date {value}.")
+    raise AptException(f"Cannot parse date {value}.")
 
 
 ARCHIVE_EXTENSIONS = {
@@ -110,7 +112,7 @@ def archive_extensions(name: str):
 
 
 @beartype
-def read(
+def read_archive(
     name: str, content: bytes
 ) -> typing.Generator[tuple[str, bytes], typing.Any, None]:
     """Read the content with the given name and generate the raw content it contains."""

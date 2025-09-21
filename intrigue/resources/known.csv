@@ -1,0 +1,85 @@
+group,category,value,date,title
+debian,codename,trixie,2025,version 13 released 2025
+debian,codename,bookworm,2023,version 12 released 2023
+debian,codename,bullseye,2021,version 11 released 2021
+debian,codename,buster,2019,version 10 released 2019
+debian,codename,jessie,2017,version 9 released 2017
+debian,codename,stretch,2015,version 8 released 2015
+debian,codename,wheezy,2013,version 7 released 2013
+debian,codename,squeeze,2011,version 6 released 2011
+debian,codename,sid,,unstable distribution
+debian,suite,experimental,,where packages are tested
+debian,suite,unstable,,active development
+debian,suite,backport,,updated packages for stable
+debian,suite,testing,,more recent versions of software
+debian,suite,stable,,latest officially released distribution
+debian,suite,oldstable,,previous stable release
+debian,suite,oldoldstable,,2x previous stable release
+debian,dist-suffix,security,,
+debian,dist-suffix,updates,,
+debian,dist-suffix,proposed-updates,,
+debian,dist-suffix,backports,,
+debian,dist-suffix,backports-sloppy,,
+debian,component,edge,,
+debian,component,nightly,,
+debian,component,stable,,
+debian,component,test,,
+debian,component,contrib,,
+debian,component,main,,
+debian,component,non-free-firmware,,
+debian,component,non-free,,
+debian,component,updates,,
+ubuntu,codename,oracular,2024-10,Ubuntu 24.10
+ubuntu,codename,noble,2024-04,Ubuntu 24.04 LTS
+ubuntu,codename,mantic,2023-10,Ubuntu 23.10
+ubuntu,codename,lunar,2023-04,Ubuntu 23.04
+ubuntu,codename,kinetic,2022-10,Ubuntu 22.10
+ubuntu,codename,jammy,2022-04,Ubuntu 22.04 LTS
+ubuntu,codename,impish,2021-10,Ubuntu 21.10
+ubuntu,codename,hirsute,2021-04,Ubuntu 21.04
+ubuntu,codename,groovy,2020-10,Ubuntu 20.10
+ubuntu,codename,focal,2020-04,Ubuntu 20.04 LTS
+ubuntu,codename,eoan,2019-10,Ubuntu 19.10
+ubuntu,codename,disco,2019-04,Ubuntu 19.04
+ubuntu,codename,cosmic,2018-10,Ubuntu 18.10
+ubuntu,codename,bionic,2018-04,Ubuntu 18.04 LTS
+ubuntu,codename,artful,2017-10,Ubuntu 17.10
+ubuntu,codename,zesty,2017-04,Ubuntu 17.04
+ubuntu,codename,yakkety,2016-10,Ubuntu 16.10
+ubuntu,codename,xenial,2016-04,Ubuntu 16.04 LTS
+ubuntu,codename,wily,2015-10,Ubuntu 15.10
+ubuntu,codename,vivid,2015-04,Ubuntu 15.04
+ubuntu,codename,utopic,2014-10,Ubuntu 14.10
+ubuntu,codename,trusty,2014-04,Ubuntu 14.04 LTS
+ubuntu,codename,saucy,2013-10,Ubuntu 13.10
+ubuntu,codename,raring,2013-04,Ubuntu 13.04
+ubuntu,codename,quantal,2012-10,Ubuntu 12.10
+ubuntu,codename,precise,2012-04,Ubuntu 12.04 LTS
+ubuntu,suite,devel,,in development packages
+ubuntu,dist-suffix,security,,
+ubuntu,dist-suffix,updates,,
+ubuntu,dist-suffix,proposed,,
+ubuntu,dist-suffix,backports,,
+ubuntu,component,main,,
+ubuntu,component,multiverse,,
+ubuntu,component,restricted,,
+ubuntu,component,universe,,
+common,arch,amd64,,
+common,arch,arm64,,
+common,arch,armel,,
+common,arch,armhf,,
+common,arch,i386,,
+common,arch,mips64el,,
+common,arch,mipsel,,
+common,arch,ppc64el,,
+common,arch,riscv64,,
+common,arch,s390x,,
+known-name,file,InRelease,,Release combined file
+known-name,file,Release.gpg,,Release detached gpg file
+known-name,file,Release,,Release clear file
+known-name,dir,dists,,distributions directory
+known-name,dir,by-hash,,by hash directory
+known-name,dir,i18n,,i18n directory
+known-name,file,ls-lR.gz,,top listing file
+known-name,file,Packages,,packages listing file
+known-name,file,Contents,,contents listing file

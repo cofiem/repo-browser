@@ -1,84 +1,13 @@
-group,category,value,title
-debian,codename,trixie,version 13 first released 2025
-debian,codename,bookworm,version 12 first released 2023
-debian,codename,bullseye,version 11 first released 2021
-debian,codename,buster,version 10 first released 2019
-debian,codename,jessie,version 9 first released 2017
-debian,codename,stretch,version 8 first released 2015
-debian,codename,wheezy,version 7 first released 2013
-debian,codename,squeeze,version 6 first released 2011
-debian,codename,sid,unstable distribution
-debian,suite,experimental,where packages are tested
-debian,suite,unstable,active development
-debian,suite,backport,updated packages for stable
-debian,suite,testing, more recent versions of software
-debian,suite,stable,latest officially released distribution
-debian,suite,oldstable,previous stable release
-debian,dist-suffix,security,
-debian,dist-suffix,updates,
-debian,dist-suffix,proposed-updates,
-debian,dist-suffix,backports,
-debian,dist-suffix,backports-sloppy,
-debian,component,edge,
-debian,component,nightly,
-debian,component,stable,
-debian,component,test,
-debian,component,contrib,
-debian,component,main,
-debian,component,non-free-firmware,
-debian,component,non-free,
-debian,component,updates,
-ubuntu,codename,oracular,Ubuntu 24.10
-ubuntu,codename,noble,Ubuntu 24.04 LTS
-ubuntu,codename,mantic,Ubuntu 23.10
-ubuntu,codename,lunar,Ubuntu 23.04
-ubuntu,codename,kinetic,Ubuntu 22.10
-ubuntu,codename,jammy,Ubuntu 22.04 LTS
-ubuntu,codename,impish,Ubuntu 21.10
-ubuntu,codename,hirsute,Ubuntu 21.04
-ubuntu,codename,groovy,Ubuntu 20.10
-ubuntu,codename,focal,Ubuntu 20.04 LTS
-ubuntu,codename,eoan,Ubuntu 19.10
-ubuntu,codename,disco,Ubuntu 19.04
-ubuntu,codename,cosmic,Ubuntu 18.10
-ubuntu,codename,bionic,Ubuntu 18.04 LTS
-ubuntu,codename,artful,Ubuntu 17.10
-ubuntu,codename,zesty,Ubuntu 17.04
-ubuntu,codename,yakkety,Ubuntu 16.10
-ubuntu,codename,xenial,Ubuntu 16.04 LTS
-ubuntu,codename,wily,Ubuntu 15.10
-ubuntu,codename,vivid,Ubuntu 15.04
-ubuntu,codename,utopic,Ubuntu 14.10
-ubuntu,codename,trusty,Ubuntu 14.04 LTS
-ubuntu,codename,saucy,Ubuntu 13.10
-ubuntu,codename,raring,Ubuntu 13.04
-ubuntu,codename,quantal,Ubuntu 12.10
-ubuntu,codename,precise,Ubuntu 12.04 LTS
-ubuntu,suite,devel,in development packages
-ubuntu,dist-suffix,security,
-ubuntu,dist-suffix,updates,
-ubuntu,dist-suffix,proposed,
-ubuntu,dist-suffix,backports,
-ubuntu,component,main,
-ubuntu,component,multiverse,
-ubuntu,component,restricted,
-ubuntu,component,universe,
-common,arch,amd64,
-common,arch,arm64,
-common,arch,armel,
-common,arch,armhf,
-common,arch,i386,
-common,arch,mips64el,
-common,arch,mipsel,
-common,arch,ppc64el,
-common,arch,riscv64,
-common,arch,s390x,
-known-name,file,InRelease,Release combined file
-known-name,file,Release.gpg,Release detached gpg file
-known-name,file,Release,Release clear file
-known-name,dir,dists,distributions directory
-known-name,dir,by-hash,by hash directory
-known-name,dir,i18n,i18n directory
-known-name,file,ls-lR.gz,top listing file
-known-name,file,Packages,packages listing file
-known-name,file,Contents,contents listing file
+text,url,sign_url,distribution,component,architecture,notes
+"deadsnakes PPA as one-line-style list format",deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu focal main,,,,
+"deadsnakes apt PPA as deb822-style sources format",https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu,,focal,main,
+"Docker apt repository",deb [arch=amd64 signed-by=https://download.docker.com/linux/ubuntu/gpg] https://download.docker.com/linux/ubuntu focal stable,,,,
+"Nginx apt repository",https://nginx.org/packages/ubuntu/,https://nginx.org/keys/nginx_signing.key,focal,stable,amd64
+"PostgreSQL apt repository",https://apt.postgresql.org/pub/repos/apt,https://www.postgresql.org/media/keys/ACCC4CF8.asc,focal-pgdg,main,amd64
+"HashiCorp apt repository",https://apt.releases.hashicorp.com,https://apt.releases.hashicorp.com/gpg,focal,main,amd64 arm64
+"Google Chrome apt repository",https://dl.google.com/linux/chrome/deb,https://dl.google.com/linux/linux_signing_key.pub,,,
+"Old Ubuntu releases",https://old-releases.ubuntu.com/ubuntu,,,,
+"Jellyfin Media Server repository",https://repo.jellyfin.org/ubuntu,https://repo.jellyfin.org/jellyfin_team.gpg.key,noble,main,amd64
+"Linux Mint repository",https://mirror.aarnet.edu.au/pub/linuxmint-packages/,https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x302f0738f465c1535761f965a6616109451bbbf2,zara,main,amd64
+"Ubuntu repository",https://mirror.aarnet.edu.au/pub/ubuntu/archive/,https://mirror.aarnet.edu.au/pub/ubuntu/archive/project/ubuntu-archive-keyring.gpg,noble,main,amd64
+"Debian repository",https://mirror.aarnet.edu.au/pub/debian/,https://ftp-master.debian.org/keys/archive-key-13.asc,trixie,main,amd64,Signing key is from https://ftp-master.debian.org/keys.html

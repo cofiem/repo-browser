@@ -6,6 +6,8 @@ from beartype import beartype
 
 from intrigue import utils
 from intrigue.apt import models as apt_models
+from intrigue.apt import utils as apt_utils
+from intrigue.apt.utils import AptException
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +30,7 @@ def paragraph(content: str) -> apt_models.Paragraph:
     for line in lines:
         # paragraph end (blank line)
         if (not line or not line.strip()) and fields:
-            raise ValueError("A paragraph cannot contain an empty line.")
+            raise AptException("A paragraph cannot contain an empty line.")
 
         # comment line
         if line.startswith("#"):
@@ -45,7 +47,7 @@ def paragraph(content: str) -> apt_models.Paragraph:
 
         # get the key and value
         if ":" not in line:
-            raise ValueError(f"Invalid paragraph line '{line}'.")
+            raise AptException(f"Invalid paragraph line '{line}'.")
 
         line_key, line_value = line.split(":", maxsplit=1)
         current_key = line_key.strip()
@@ -100,7 +102,7 @@ def release(url: str, content: str) -> apt_models.Release | None:
 
         if process == "one":
             if len(f.values) != 1:
-                raise ValueError("Unexpected field values '%s'.", f.values)
+                raise AptException("Unexpected field values '%s'.", f.values)
             return f.values[0]
         elif process == "space_sep_items":
             return [i for v in f.values for i in v.split(" ")]
@@ -121,7 +123,7 @@ def release(url: str, content: str) -> apt_models.Release | None:
                 )
             return result
         else:
-            raise ValueError(f"Unknown process {process}")
+            raise AptException(f"Unknown process {process}")
 
     p = control_item.paragraphs[0]
     data = {
@@ -151,26 +153,50 @@ def release(url: str, content: str) -> apt_models.Release | None:
 
 @beartype
 def parse_repository(
-    url: str | None,
-    distributions: list[str] | str | None = None,
-    components: list[str] | str | None = None,
-    architectures: list[str] | str | None = None,
-    signed_by: str | None = None,
+    url: str | None = None,
+    repository: str | None = None,
+    directory: str | None = None,
+    distribution: list[str] | str | None = None,
+    component: list[str] | str | None = None,
+    architecture: list[str] | str | None = None,
+    sign_url: str | None = None,
 ) -> apt_models.RepositorySourceEntry | None:
     """Parse a RepositorySourceEntry from an apt list file entry."""
-    if url is None:
-        return None
+    errors = []
+
+    dir_list = directory.split("/") if directory else []
+
+    if not url:
+        url = ""
 
     match = RE_LIST_ENTRY.match(url)
 
     groups = match.groupdict() if match else {}
-    url = url if not match else groups.get("url")
+    url = url if not match else (groups.get("url") or "")
 
-    result = apt_models.RepositorySourceEntry(url=url)
-    result = result.with_distributions(source_split(distributions))
-    result = result.with_components(source_split(components))
-    result = result.with_architectures(source_split(architectures))
-    raw_signed_by = str(signed_by).strip() if signed_by else ""
+    url_parts = apt_utils.SimpleUrl()
+    if url:
+        url_parts = apt_utils.from_url(url)
+    if (not url_parts or not url_parts.netloc) and not repository:
+        errors.append("The repository or url domain must be provided.")
+    if url and repository and url_parts.netloc != repository:
+        errors.append(
+            f"The url domain '{url_parts.netloc}' must match the repository '{repository}'."
+        )
+    if not url and repository:
+        url_parts = apt_utils.SimpleUrl(
+            scheme="https", netloc=repository, path=dir_list, query={}
+        )
+    if url and directory and url_parts.path != dir_list:
+        errors.append(
+            f"The url path '{url_parts.path_str}' must match the directory '{directory}'."
+        )
+
+    result = apt_models.RepositorySourceEntry(url=url_parts)
+    result = result.with_distributions(source_split(distribution))
+    result = result.with_components(source_split(component))
+    result = result.with_architectures(source_split(architecture))
+    raw_signed_by = str(sign_url).strip() if sign_url else ""
     if raw_signed_by:
         result = result.with_signed_by(raw_signed_by)
 
@@ -181,15 +207,20 @@ def parse_repository(
         extras1 = (groups.get("extras") or "").split("=")
         extras = [e for i in extras1 for e in i.strip().rsplit(" ", maxsplit=1)]
         available = dict(zip(*[iter(extras)] * 2))
-        raw_archs = available.get("arch", "").split(",")
+        raw_arch = available.get("arch", "").split(",")
 
-        result = result.with_architectures(source_split(raw_archs))
+        result = result.with_architectures(source_split(raw_arch))
 
         raw_signed_by = (available.get("signed-by", "") or "").strip()
         if not result.signed_by and raw_signed_by:
             result = result.with_signed_by(raw_signed_by)
 
+    logger.warning("Parsed repository %s", result)
+
+    if errors:
+        raise AptException(" ".join(errors))
     return result
+
 
 @beartype
 def source_split(value: list[str] | str | None) -> list[str]:
@@ -199,4 +230,4 @@ def source_split(value: list[str] | str | None) -> list[str]:
         return value
     if isinstance(value, str):
         return (value or "").split(" ")
-    raise ValueError(value)
+    raise AptException(value)

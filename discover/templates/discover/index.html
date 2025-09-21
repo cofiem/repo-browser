@@ -15,8 +15,16 @@
             <a href="https://manpages.debian.org/bookworm/apt/sources.list.5.en.html" target="_blank">apt data
                 source</a>.
         </p>
+        <p>
+            If the data source can be browsed, then the available packages will be populated.
+            If the data source does not provide a way to browse it, then further information will be required
+            about the available distributions, components, and architectures.
+        </p>
+        <p>
+            If the optional signing key is provided, then the various file signatures will be checked.
+        </p>
 
-        <form action="{% url 'discover:index' %}" method="post">
+        <form action="{% url 'discover:index' %}" method="post" novalidate>
             {% csrf_token %}
             {{ form }}
             <button type="submit" class="btn btn-primary">Browse</button>
@@ -26,7 +34,6 @@
         <h4 class="mt-4">Examples</h4>
 
         <div id="examples" class="list-group mb-4"></div>
-
     </div>
 
 {% endblock body %}
@@ -47,6 +54,9 @@
             const button = document.createElement("button");
             button.className = "list-group-item list-group-item-action";
             button.textContent = example.text;
+            if (example.notes) {
+                button.textContent += " (" + example.notes + ")";
+            }
 
             button.dataset.url = example.url;
             button.dataset.sign_url = example.sign_url;
@@ -63,103 +73,18 @@
 
         // links
         const examples = [
-            {
-                text: "deadsnakes PPA as one-line-style list format",
-                url: 'deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu focal main',
-                sign_url: '',
-                distribution: '',
-                component: '',
-                architecture: '',
-            },
-            {
-                text: "deadsnakes apt PPA as deb822-style sources format",
-                url: 'https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu',
-                sign_url: '',
-                distribution: 'focal',
-                component: 'main',
-                architecture: '',
-            },
-            {
-                text: "Docker apt repository",
-                url: 'deb [arch=amd64 signed-by=https://download.docker.com/linux/ubuntu/gpg] https://download.docker.com/linux/ubuntu focal stable',
-                sign_url: '',
-                distribution: '',
-                component: '',
-                architecture: '',
-            },
-            {
-                text: "Nginx apt repository",
-                url: 'https://nginx.org/packages/ubuntu/',
-                sign_url: 'https://nginx.org/keys/nginx_signing.key',
-                distribution: 'focal',
-                component: 'stable',
-                architecture: 'amd64',
-            },
-            {
-                text: "PostgreSQL apt repository",
-                url: 'https://apt.postgresql.org/pub/repos/apt',
-                sign_url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc',
-                distribution: 'focal-pgdg',
-                component: 'main',
-                architecture: 'amd64',
-            },
-            {
-                text: "HashiCorp apt repository",
-                url: 'https://apt.releases.hashicorp.com',
-                sign_url: 'https://apt.releases.hashicorp.com/gpg',
-                distribution: 'focal',
-                component: 'main',
-                architecture: 'amd64 arm64',
-            },
-            {
-                text: "Google Chrome apt repository",
-                url: 'https://dl.google.com/linux/chrome/deb',
-                sign_url: 'https://dl.google.com/linux/linux_signing_key.pub',
-                distribution: '',
-                component: '',
-                architecture: '',
-            },
-            {
-                text: "Old Ubuntu releases",
-                url: 'https://old-releases.ubuntu.com/ubuntu',
-                sign_url: '',
-                distribution: '',
-                component: '',
-                architecture: '',
-            },
-            {
-                text: "Jellyfin Media Server repository",
-                url: 'https://repo.jellyfin.org/ubuntu',
-                sign_url: 'https://repo.jellyfin.org/jellyfin_team.gpg.key',
-                distribution: 'noble',
-                component: 'main',
-                architecture: 'amd64',
-            },
-            {
-                text: "Linux Mint repository",
-                url: 'https://mirror.aarnet.edu.au/pub/linuxmint-packages/',
-                sign_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x302f0738f465c1535761f965a6616109451bbbf2',
-                distribution: 'zara',
-                component: 'main',
-                architecture: 'amd64',
-            },
-            {
-                text: "Ubuntu repository",
-                url: 'https://mirror.aarnet.edu.au/pub/ubuntu/archive/',
-                sign_url: 'https://mirror.aarnet.edu.au/pub/ubuntu/archive/project/ubuntu-archive-keyring.gpg',
-                distribution: 'noble',
-                component: 'main',
-                architecture: 'amd64',
-            },
-            {
-                // https://ftp-master.debian.org/keys.html
-                text: "Debian repository",
-                url: 'https://mirror.aarnet.edu.au/pub/debian/',
-                sign_url: 'https://ftp-master.debian.org/keys/archive-key-13.asc',
-                distribution: 'trixie',
-                component: 'main',
-                architecture: 'amd64',
-            },
+            {% for example in examples %}
+                {
+                    text: "{{ example.text }}",
+                    url: "{{ example.url }}",
+                    sign_url: "{{ example.sign_url }}",
+                    distribution: "{{ example.distribution }}",
+                    component: "{{ example.component }}",
+                    architecture: "{{ example.architecture }}",
+                    notes: "{{ example.notes }}",
+                }
+                {% if not loop.last %},{% endif %}
+            {% endfor %}
         ];
 
         for (const example of examples) {

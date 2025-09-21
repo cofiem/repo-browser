@@ -1,17 +1,16 @@
 """Models for repository data."""
 
-import csv
 import datetime
 import enum
 import logging
 import pathlib
 import typing
-from importlib.resources import files
 
 import attrs
 from beartype import beartype
 
-from intrigue import utils
+from intrigue.apt import utils as apt_utils
+from intrigue.apt.utils import AptException
 from intrigue.gpg import models as gpg_models
 
 logger = logging.getLogger(__name__)
@@ -23,7 +22,7 @@ class RepositorySourceEntry:
     """An entry in an apt list or sources file
     or just the url to an APT repository."""
 
-    url: str
+    url: apt_utils.SimpleUrl
     """Where the content for an instance was obtained."""
 
     distributions: typing.Optional[list[str]] = None
@@ -55,7 +54,7 @@ class RepositorySourceEntry:
         elif isinstance(value, str) and value.strip() and not value.startswith("http"):
             value = pathlib.Path(value.strip())
         else:
-            raise ValueError(f"Unknown signed by value '{value}'.")
+            raise AptException(f"Unknown signed by value '{value}'.")
         return self._new_item(value, "signed_by")
 
     #         # TODO: param_url can be a url or apt one-line list style
@@ -68,15 +67,6 @@ class RepositorySourceEntry:
     #             "directory": parts.path,
     #         }
 
-    def as_querystring(self):
-        return {
-            "url": self.url,
-            "distribution": " ".join(self.distributions or []),
-            "component": " ".join(self.components or []),
-            "architecture": " ".join(self.architectures or []),
-            "sign_url": self.signed_by or "",
-        }
-
     def _new_items(self, values: typing.Optional[list[str]], action: str, field: str):
         existing = getattr(self, field)
         if action == "extend":
@@ -84,7 +74,7 @@ class RepositorySourceEntry:
         elif action == "replace":
             items = values
         else:
-            raise ValueError(
+            raise AptException(
                 f"Unknown action '{action}'. Expected 'extend' or 'replace'."
             )
         items = sorted(set(i.strip() for i in items if i and i.strip()))
@@ -95,7 +85,7 @@ class RepositorySourceEntry:
     def _new_item(self, value: str, field: str):
         if value is not None and (not value or not value.strip()):
             # Allow None, but not empty strings
-            raise ValueError(f"Cannot set empty string for {field}.")
+            raise AptException(f"Cannot set empty string for {field}.")
         return attrs.evolve(self, **{field: value})
 
 
@@ -164,7 +154,7 @@ class FileHashType(enum.Enum):
         }
         if name in known:
             return known[name]
-        raise ValueError(f"Unknown file hash type '{name}'.")
+        raise AptException(f"Unknown file hash type '{name}'.")
 
     def to_control_field(self, is_release_file: bool) -> str:
         known = {
@@ -175,7 +165,7 @@ class FileHashType(enum.Enum):
         }
         if self in known:
             return known[self]
-        raise ValueError(f"Unknown file hash type '{self}'.")
+        raise AptException(f"Unknown file hash type '{self}'.")
 
     @classmethod
     def preferred(cls):
@@ -282,29 +272,3 @@ class RepositoryRelease:
     """The signature used to sign the Release file."""
     public_key: gpg_models.PublicKeyPacket | None = None
     """The public key used to verify the signature."""
-
-
-@beartype
-@attrs.frozen
-class AptRepoKnownNames:
-    group: str
-    category: str
-    value: str
-    title: str
-
-    @classmethod
-    def from_resources_csv_file(cls):
-        resource_name = "intrigue.resources.repos-apt.csv"
-        with (
-            files(utils.get_name_under())
-            .joinpath(resource_name)
-            .open("r", encoding="utf-8") as f
-        ):
-            reader = csv.DictReader(f)
-            for row in reader:
-                yield AptRepoKnownNames(
-                    group=row.get("group", ""),
-                    category=row.get("category", ""),
-                    value=row.get("value", ""),
-                    title=row.get("title", ""),
-                )

@@ -19,12 +19,14 @@ docker build --target export_deps --output export_deps .
 # To run manage.py commands
 docker compose run --build --rm dev_app python manage.py
 
-# To run tests
-docker compose run --build --rm dev_app pytest -n auto --cov=discover --cov=examine --cov=intrigue
+# To run tests (parallel)
+docker compose run --rm dev_runner pytest -n auto --cov=discover --cov=examine --cov=intrigue
+# To run tests (serial)
+docker compose run --rm dev_runner pytest -n 0 --cov=discover --cov=examine --cov=intrigue
 
 # To run ruff formatter and linter
-docker compose run --build --rm dev_app ruff format discover examine intrigue
-docker compose run --build --rm dev_app ruff check --fix discover examine intrigue
+docker compose run --rm dev_runner ruff format discover examine intrigue
+docker compose run --rm dev_runner ruff check --fix discover examine intrigue
 ```
 
 

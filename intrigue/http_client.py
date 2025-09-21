@@ -12,6 +12,7 @@ import requests_cache
 from beartype import beartype
 
 from intrigue.apt import utils
+from intrigue.apt.utils import AptException
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class HttpClient:
         use_cache_control: bool = False,
     ):
         if not cache_file:
-            raise ValueError("Cache path must be provided.")
+            raise AptException("Cache path must be provided.")
 
         self._backend_file = cache_file
         self._backend = requests_cache.SQLiteCache(self._backend_file)
@@ -69,7 +70,7 @@ class HttpClient:
             backend=self._backend,
             expire_after=self._expire_after,
             cache_control=self._use_cache_control,
-            allowable_codes=(200,404,403),
+            allowable_codes=(200, 404, 403),
         )
 
         self._throttle_time = (
@@ -150,13 +151,15 @@ class HttpClient:
                 links.append(link_url.strip())
 
         if seen_parent is not True:
-            raise ValueError("Unknown html directory listing format.")
+            raise AptException("Unknown html directory listing format.")
 
         return HtmlListing(url=url, links=sorted(links))
 
     def _log(self, resp):
-        logger.warning("GET %s '%s' (%s): %s",
-                       resp.status_code,
-                       resp.headers.get('content-type', ""),
-                       'cache' if resp.from_cache else 'fresh',
-                       resp.url)
+        logger.warning(
+            "GET %s '%s' (%s): %s",
+            resp.status_code,
+            resp.headers.get("content-type", ""),
+            "cache" if resp.from_cache else "fresh",
+            resp.url,
+        )

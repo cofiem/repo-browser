@@ -1,41 +1,61 @@
 {% extends "discover/base.html" %}
 
-{% block title %}Repo Browser | Repository {{ repository }} at {{ directory }}{% endblock %}
+{% block title %}Repo Browser | Repository {{ repo_source_entry.url.netloc }} at
+    {{ repo_source_entry.url.path_str }}{% endblock %}
 
 {% block body %}
-    <div class="container">
-        <h1 class="display-4">Repository</h1>
+    {% with current_path=repo_source_entry.url.path %}
+        <div class="container">
+            <h1 class="display-4">Repository</h1>
 
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-chevron p-3 bg-body-tertiary rounded-3">
-                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                <li class="breadcrumb-item" aria-current="location"><a
-                        href="{% url 'discover:repository-netloc' repository %}">{{ repository }}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{ directory }}</li>
-            </ol>
-        </nav>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-chevron p-3 bg-body-tertiary rounded-3">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item" aria-current="location">
+                        <a href="{% url 'discover:repository-netloc' repo_source_entry.url.netloc %}">{{ repo_source_entry.url.netloc }}</a>
+                    </li>
 
-        <p>View the source page <a href="{{ html_listing.url }}">{{ repository }} at {{ directory }}</a></p>
+                    {% if current_path|length %}
+                        {% for path in current_path %}
+                            {% if not forloop.last %}
+                                <li class="breadcrumb-item active">
+                                    <a href="{% url 'discover:repository' repo_source_entry.url.netloc current_path|slice:forloop.counter|join:"/" %}">
+                                        {{ path }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
 
-        <h3>Directory browser</h3>
-        <ul>
-            {% for link in html_listing.links %}
-                <li><a href="{% url 'discover:repository' repository directory %}{{ link }}">{{ link }}</a></li>
-            {% endfor %}
-        </ul>
+                    {% if repo_source_entry.url.path %}
+                        <li class="breadcrumb-item active"
+                            aria-current="page">{{ repo_source_entry.url.path | last }}</li>
+                    {% endif %}
+                </ol>
+            </nav>
 
-        <h4>Release Found</h4>
-        <p>{{ release_info }}</p>
-    
-        <h4>Release Data</h4>
-        <p>{{ release_data }}</p>
+            <p>View the <a href="{{ repo_source_entry.url.url }}">source page</a></p>
 
-        <h3>Structure browser</h3>
-        <p>TODO: parsed repo contents</p>
+            <h3>Directory browser</h3>
+            <ul>
+                {#            {% for link in html_listing.links %}#}
+                {#                <li><a href="{% url 'discover:repository' repository directory %}{{ link }}">{{ link }}</a></li>#}
+                {#            {% endfor %}#}
+            </ul>
 
-        <h3>File viewer</h3>
-        <p>TODO: view file content</p>
+            <h4>Release Found</h4>
+            <p></p>
 
-        <p>TODO: do things async</p>
-    </div>
+            <h4>Release Data</h4>
+            <p></p>
+
+            <h3>Structure browser</h3>
+            <p>TODO: parsed repo contents</p>
+
+            <h3>File viewer</h3>
+            <p>TODO: view file content</p>
+
+            <p>TODO: do things async</p>
+        </div>
+    {% endwith %}
 {% endblock %}
