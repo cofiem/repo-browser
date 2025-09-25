@@ -129,6 +129,15 @@ STATIC_ROOT = BASE_DIR / "static_collected"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
+# Background Tasks
+# https://docs.djangoproject.com/en/6.0/topics/tasks/
+TASKS = {
+    "default": {
+        "BACKEND": "django.tasks.backends.immediate.ImmediateBackend",
+    },
+}
+
 # Custom settings
 
 BACKEND_HTTP_CLIENT = HttpClient(cache_file=DATABASE_PATH)

@@ -10,16 +10,20 @@
 
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb breadcrumb-chevron p-3 bg-body-tertiary rounded-3">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/{% querystring %}">Home</a></li>
                     <li class="breadcrumb-item" aria-current="location">
-                        <a href="{% url 'discover:repository-netloc' repo_source_entry.url.netloc %}">{{ repo_source_entry.url.netloc }}</a>
+                        <a href="
+
+                                {% url 'discover:repository-netloc' repo_source_entry.url.netloc %}{% querystring %}">{{ repo_source_entry.url.netloc }}</a>
                     </li>
 
                     {% if current_path|length %}
                         {% for path in current_path %}
                             {% if not forloop.last %}
                                 <li class="breadcrumb-item active">
-                                    <a href="{% url 'discover:repository' repo_source_entry.url.netloc current_path|slice:forloop.counter|join:"/" %}">
+                                    <a href="
+
+                                            {% url 'discover:repository' repo_source_entry.url.netloc current_path|slice:forloop.counter|join:"/" %}{% querystring %}">
                                         {{ path }}
                                     </a>
                                 </li>
@@ -37,17 +41,25 @@
             <p>View the <a href="{{ repo_source_entry.url.url }}">source page</a></p>
 
             <h3>Directory browser</h3>
-            <ul>
-                {#            {% for link in html_listing.links %}#}
-                {#                <li><a href="{% url 'discover:repository' repository directory %}{{ link }}">{{ link }}</a></li>#}
-                {#            {% endfor %}#}
-            </ul>
+            <div class="list-group">
+                {% for link in html_listing.links %}
+                    <a class="list-group-item list-group-item-action"
+                       href="{% url 'discover:repository' repository directory %}{{ link }}{%  querystring %} %}">{{ link }}</a>
+                {% endfor %}
+            </div>
 
             <h4>Release Found</h4>
             <p></p>
 
             <h4>Release Data</h4>
             <p></p>
+
+            <h4>Landmarks</h4>
+            <div class="list-group">
+                {% for landmark in landmarks %}
+                    <li class="list-group-item">name {{ landmark.name }} match {{ landmark.match_type }} url {{ landmark.url }}</li>
+                {% endfor %}
+            </div>
 
             <h3>Structure browser</h3>
             <p>TODO: parsed repo contents</p>

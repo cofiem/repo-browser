@@ -1,9 +1,10 @@
 import logging
 
+from django.conf import settings
 from django.http import QueryDict
 from django.urls import reverse
 
-from intrigue.apt import models as apt_models
+from intrigue.apt import models as apt_models, find
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +13,6 @@ def repo_view_info(repo: apt_models.RepositorySourceEntry | None):
     result = {"url": "", "view_context": {}}
     if not repo:
         return result
-
-    # client = settings.BACKEND_HTTP_CLIENT
 
     # build the url for the page matching the repo
     if repo.url.path_str:
@@ -42,6 +41,10 @@ def repo_view_info(repo: apt_models.RepositorySourceEntry | None):
 
     result["url"] = url
     result["view_context"]["repo_source_entry"] = repo
+
+    client = settings.BACKEND_HTTP_CLIENT
+    result["view_context"]["html_listing"] = find.get_links(client, repo.url.url)
+    result["view_context"]["landmarks"] = find.detect_landmarks(repo)
 
     return result
 

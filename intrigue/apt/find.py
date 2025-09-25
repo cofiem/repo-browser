@@ -251,11 +251,11 @@ def release(
 
 @beartype
 def detect_landmarks(
-    client: http_client.HttpClient, repo_src: apt_models.RepositorySourceEntry
-) -> tuple[str | None, landmark.Landmark | None]:
+    repo_src: apt_models.RepositorySourceEntry,
+) -> list[landmark.Landmark]:
     """Try to discover where the url is in an apt repo,
     by detecting landmarks by looking at the file listing for the given url."""
-    url = repo_src.url
+    url = repo_src.url.url
 
     # build the landmarks using the repo src properties
     landmarks = [
@@ -296,7 +296,6 @@ def detect_landmarks(
                         landmark.arch_release_file(url, dist, comp, arch),
                     ]
                 )
-
     # use the found urls from the html listing
     # and compare to the built landmarks
     # TODO
@@ -305,4 +304,4 @@ def detect_landmarks(
     #     for landmark_item in landmarks:
     #         if landmark_item.match(found_url):
     #             return found_url, landmark_item
-    return None, None
+    return landmarks
