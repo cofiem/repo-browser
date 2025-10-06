@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1@sha256:38387523653efa0039f8e1c89bb74a30504e76ee9f565e25c9a09841f9427b05
-FROM python:3.13.7-trixie@sha256:4e75b1a51bb46acbc640392917f513e4a3a0206547233fb553ea160b06a73af0 AS base
+FROM python:3.13.7-trixie@sha256:83f08588d12b40f48044fc65d95fc15340f1508e037083f8757dad041c66ffd9 AS base
 
 # Prevents Python from writing pyc files to reudce issues from pyc files not being updated.
 ENV PYTHONDONTWRITEBYTECODE=1
