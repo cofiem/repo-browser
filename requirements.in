@@ -1,5 +1,5 @@
 # web
-Django==6.0a1
+Django==6.0b1
 daphne==4.2.1
 
 # remote repos
