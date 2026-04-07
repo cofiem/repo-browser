@@ -11,4 +11,4 @@ parsel==1.10.0
 attrs==25.3.0
 
 # typing
-beartype==0.22.0rc0
+beartype==0.22.5
